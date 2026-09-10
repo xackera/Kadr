@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>Kadr</AssemblyName>
+    <RootNamespace>Kadr.App</RootNamespace>
+    <ApplicationIcon>Assets\kadr-app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyTitle>Kadr</AssemblyTitle>
+    <Description>Kadr: скриншоты и запись экрана</Description>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.*" />
+    <PackageReference Include="H.NotifyIcon.Wpf" Version="2.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.*" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="6.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kadr.Common\Kadr.Common.csproj" />
+    <ProjectReference Include="..\Kadr.Capture\Kadr.Capture.csproj" />
+    <ProjectReference Include="..\Kadr.Recording\Kadr.Recording.csproj" />
+    <ProjectReference Include="..\Kadr.Recorder\Kadr.Recorder.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- Видеомодуль кладётся рядом с Kadr.exe -->
+  <Target Name="CopyRecorder" AfterTargets="Build">
+    <ItemGroup>
+      <RecorderFiles Include="..\Kadr.Recorder\bin\$(Configuration)\$(TargetFramework)\**\*" />
+    </ItemGroup>
+    <!-- Только недостающие файлы: общие библиотеки берутся из выхода приложения (у него версии не ниже) -->
+    <Copy SourceFiles="@(RecorderFiles)" DestinationFiles="@(RecorderFiles->'$(OutDir)%(RecursiveDir)%(Filename)%(Extension)')"
+          Condition="!Exists('$(OutDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+  <ItemGroup>
+    <Resource Include="Assets\*.ico" />
+    <Resource Include="Assets\*.wav" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- WinForms нужен только для System.Drawing и Screen; неявные usings убираем, чтобы не конфликтовали с WPF -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+</Project>

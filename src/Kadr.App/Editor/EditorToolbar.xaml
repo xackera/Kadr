@@ -1,0 +1,138 @@
+<UserControl x:Class="Kadr.App.Editor.EditorToolbar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="False">
+    <UserControl.Resources>
+        <Style x:Key="ToolButton" TargetType="ToggleButton">
+            <Setter Property="Width" Value="36" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Margin" Value="1,0" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="#303030" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="B" Background="Transparent" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="#F0F0F0" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="{StaticResource AccentLightBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Width" Value="36" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Margin" Value="1,0" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="#303030" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="B" Background="Transparent" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="#F0F0F0" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.35" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="Icon" TargetType="Path">
+            <Setter Property="Stroke" Value="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(TextElement.Foreground)}" />
+            <Setter Property="StrokeThickness" Value="1.8" />
+            <Setter Property="StrokeStartLineCap" Value="Round" />
+            <Setter Property="StrokeEndLineCap" Value="Round" />
+            <Setter Property="StrokeLineJoin" Value="Round" />
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="Stretch" Value="None" />
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="White" CornerRadius="8" Padding="6,4">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.3" />
+        </Border.Effect>
+        <StackPanel Orientation="Horizontal">
+            <ToggleButton x:Name="BtnArrow" Style="{StaticResource ToolButton}" ToolTip="Стрелка (A). Удерживайте Shift для рисования по горизонтали или вертикали." Click="Tool_Click" Tag="Arrow">
+                <Path Style="{StaticResource Icon}" Data="M4,16 L16,4 M9,4 L16,4 L16,11" />
+            </ToggleButton>
+            <ToggleButton x:Name="BtnLine" Style="{StaticResource ToolButton}" ToolTip="Линия (L). Удерживайте Shift для рисования по горизонтали или вертикали." Click="Tool_Click" Tag="Line">
+                <Path Style="{StaticResource Icon}" Data="M4,16 L16,4" />
+            </ToggleButton>
+            <ToggleButton x:Name="BtnPensil" Style="{StaticResource ToolButton}" ToolTip="Карандаш (P). Удерживайте Shift для рисования по горизонтали или вертикали." Click="Tool_Click" Tag="Pensil">
+                <Path Style="{StaticResource Icon}" Data="M4,16 L5,12 L13,4 L16,7 L8,15 Z M11,6 L14,9" />
+            </ToggleButton>
+            <ToggleButton x:Name="BtnMarker" Style="{StaticResource ToolButton}" ToolTip="Маркер (M). Удерживайте Shift для рисования по горизонтали или вертикали." Click="Tool_Click" Tag="Marker">
+                <Path Style="{StaticResource Icon}" StrokeThickness="4" Data="M4,15 L15,4" />
+            </ToggleButton>
+            <ToggleButton x:Name="BtnRectangle" Style="{StaticResource ToolButton}" ToolTip="Прямоугольник (R). Удерживайте Shift для рисования квадрата." Click="Tool_Click" Tag="Rectangle">
+                <Path Style="{StaticResource Icon}" Data="M3.5,5.5 H16.5 V14.5 H3.5 Z" />
+            </ToggleButton>
+            <ToggleButton x:Name="BtnOval" Style="{StaticResource ToolButton}" ToolTip="Овал (O). Удерживайте Shift для рисования круга." Click="Tool_Click" Tag="Oval">
+                <Path Style="{StaticResource Icon}" Data="M10,4.5 A6.5,5.5 0 1 1 9.99,4.5 Z" />
+            </ToggleButton>
+            <ToggleButton x:Name="BtnText" Style="{StaticResource ToolButton}" ToolTip="Текст (T)" Click="Tool_Click" Tag="Text">
+                <TextBlock Text="T" FontFamily="Georgia" FontWeight="Bold" FontSize="18" />
+            </ToggleButton>
+            <ToggleButton x:Name="BtnNumber" Style="{StaticResource ToolButton}" ToolTip="Числовая метка (N)" Click="Tool_Click" Tag="Number">
+                <Grid Width="20" Height="20">
+                    <Ellipse Stroke="#303030" StrokeThickness="1.8" Width="18" Height="18" />
+                    <TextBlock Text="1" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Grid>
+            </ToggleButton>
+            <ToggleButton x:Name="BtnBlur" Style="{StaticResource ToolButton}" ToolTip="Размытие (B)" Click="Tool_Click" Tag="Blur">
+                <Path Style="{StaticResource Icon}" StrokeThickness="0" Fill="#303030" Data="M4,4 H8 V8 H4 Z M12,4 H16 V8 H12 Z M8,8 H12 V12 H8 Z M4,12 H8 V16 H4 Z M12,12 H16 V16 H12 Z" />
+            </ToggleButton>
+            <Rectangle Width="1" Margin="4,4" Fill="#E0E0E0" />
+            <Button x:Name="BtnThickness" Style="{StaticResource IconButton}" ToolTip="Выбрать толщину линии (колесико мыши)" Click="Thickness_Click">
+                <Path Style="{StaticResource Icon}" Data="M4,5 H16 M4,10 H16 M4,15 H16" StrokeThickness="1" />
+            </Button>
+            <Button x:Name="BtnColor" Style="{StaticResource IconButton}" ToolTip="Выбрать цвет" Click="Color_Click">
+                <Ellipse x:Name="ColorDot" Width="18" Height="18" Fill="#FF3B30" Stroke="#40000000" StrokeThickness="1" />
+            </Button>
+            <Button x:Name="BtnUndo" Style="{StaticResource IconButton}" ToolTip="Отменить действие (Ctrl+Z). Для повтора нажмите Ctrl+Y." Click="Undo_Click">
+                <Path Style="{StaticResource Icon}" Data="M8,6 L4,10 L8,14 M4,10 H13 A3,3 0 0 1 13,16 H10" />
+            </Button>
+
+            <Popup x:Name="ThicknessPopup" StaysOpen="False" AllowsTransparency="True" PlacementTarget="{Binding ElementName=BtnThickness}" Placement="Top" VerticalOffset="-6">
+                <Border Background="White" CornerRadius="8" Padding="12,10" Margin="8">
+                    <Border.Effect><DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.3" /></Border.Effect>
+                    <StackPanel Width="200">
+                        <Grid Height="40">
+                            <TextBlock x:Name="ThicknessLabel" Text="6px" VerticalAlignment="Center" FontWeight="SemiBold" />
+                            <Rectangle x:Name="ThicknessPreview" Height="6" RadiusX="3" RadiusY="3" Fill="#303030" Margin="40,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                        <Slider x:Name="ThicknessSlider" Minimum="2" Maximum="60" Value="6" IsSnapToTickEnabled="True" TickFrequency="2" ValueChanged="ThicknessSlider_ValueChanged" />
+                    </StackPanel>
+                </Border>
+            </Popup>
+            <Popup x:Name="ColorPopup" StaysOpen="False" AllowsTransparency="True" PlacementTarget="{Binding ElementName=BtnColor}" Placement="Top" VerticalOffset="-6">
+                <Border Background="White" CornerRadius="8" Padding="10" Margin="8">
+                    <Border.Effect><DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.3" /></Border.Effect>
+                    <StackPanel>
+                        <UniformGrid x:Name="PaletteGrid" Columns="3" />
+                        <Button Content="Свой цвет" Style="{StaticResource FlatButton}" Margin="0,8,0,0" HorizontalAlignment="Center" Click="CustomColor_Click" />
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </StackPanel>
+    </Border>
+</UserControl>

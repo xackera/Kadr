@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#29B6F6"/><stop offset="1" stop-color="#3D5AFE"/>
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+  <!-- знак в масштабе: рамка выделения (пунктир) + камера, объектив оранжевый -->
+  <g transform="translate(102 102) scale(4.78)" fill="#fff">
+    <!-- пунктирная рамка: кольцо со скруглёнными углами и разрывами -->
+    <path fill-rule="evenodd" d="M20 6 h24 a14 14 0 0 1 14 14 v24 a14 14 0 0 1 -14 14 h-24 a14 14 0 0 1 -14 -14 v-24 a14 14 0 0 1 14 -14 Z
+                                  M20 11.2 a8.8 8.8 0 0 0 -8.8 8.8 v24 a8.8 8.8 0 0 0 8.8 8.8 h24 a8.8 8.8 0 0 0 8.8 -8.8 v-24 a8.8 8.8 0 0 0 -8.8 -8.8 Z"/>
+    <!-- разрывы рамки (перекрываем цветом круга) -->
+    <g fill="#3350f0">
+      <rect x="28.6" y="4" width="6.8" height="8"/><rect x="28.6" y="52" width="6.8" height="8"/>
+      <rect x="4" y="18.4" width="8" height="6.8"/><rect x="52" y="18.4" width="8" height="6.8"/>
+      <rect x="4" y="38.6" width="8" height="6.8"/><rect x="52" y="38.6" width="8" height="6.8"/>
+    </g>
+    <rect x="19" y="35" width="26" height="15" rx="3.2"/>
+    <rect x="27" y="31" width="10" height="5" rx="1.6"/>
+    <rect x="39" y="31.5" width="4" height="3" rx="1.2"/>
+    <circle cx="32" cy="42.6" r="4.6" fill="#fff"/>
+    <circle cx="32" cy="42.6" r="2.9" fill="#F6A623"/>
+  </g>
+</svg>
