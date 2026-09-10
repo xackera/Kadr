@@ -1,0 +1,77 @@
+<Window x:Class="Kadr.App.Scrolling.ScrollingCaptureWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Kadr" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" ShowActivated="True" Focusable="True">
+    <Window.Resources>
+        <Style x:Key="PanelButton" TargetType="Button">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="MinWidth" Value="36" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Foreground" Value="#303030" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="B" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="{StaticResource AccentLightBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.3" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Canvas x:Name="Root">
+        <Rectangle x:Name="DimTop" Fill="#66000000" />
+        <Rectangle x:Name="DimBottom" Fill="#66000000" />
+        <Rectangle x:Name="DimLeft" Fill="#66000000" />
+        <Rectangle x:Name="DimRight" Fill="#66000000" />
+        <Rectangle x:Name="Frame" Stroke="#FFA800" StrokeThickness="2" IsHitTestVisible="False" />
+
+        <Border x:Name="StartPanel" Style="{StaticResource Card}">
+            <Button Style="{StaticResource PanelButton}" Click="Start_Click" ToolTip="Начать захват скриншота с прокруткой (Enter)" FontFamily="Segoe UI" FontSize="14" FontWeight="SemiBold">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE74B;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center" />
+                    <TextBlock Text="Начать захват" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </Border>
+
+        <Border x:Name="ActionPanel" Style="{StaticResource Card}" Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal">
+                <Button Style="{StaticResource PanelButton}" Content="&#xE73E;" ToolTip="Готово: сохранить по настройкам (Enter)" Click="Done_Click" />
+                <Button Style="{StaticResource PanelButton}" Content="&#xE8C8;" ToolTip="Копировать в буфер обмена (Ctrl+C)" Click="Copy_Click" />
+                <Button Style="{StaticResource PanelButton}" Content="&#xE74E;" ToolTip="Сохранить на диск (Ctrl+S)" Click="Save_Click" />
+                <Button Style="{StaticResource PanelButton}" Content="&#xE8BB;" ToolTip="Закрыть (Esc)" Click="Close_Click" />
+            </StackPanel>
+        </Border>
+
+        <Border x:Name="PreviewPanel" Background="White" CornerRadius="6" Padding="3" Visibility="Collapsed">
+            <Border.Effect><DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.3" /></Border.Effect>
+            <Image x:Name="Preview" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" VerticalAlignment="Top" />
+        </Border>
+
+        <Border x:Name="Message" Background="#DD202020" CornerRadius="8" Padding="18,12" Visibility="Collapsed" IsHitTestVisible="False">
+            <TextBlock x:Name="MessageText" Foreground="White" FontSize="15" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="360" />
+        </Border>
+    </Canvas>
+</Window>

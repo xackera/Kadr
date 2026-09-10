@@ -1,0 +1,10 @@
+bin/
+obj/
+publish/
+.vs/
+*.user
+*.suo
+TestResults/
+
+# генератор иконок держим локально
+assets/icons/icon.py

@@ -1,0 +1,94 @@
+<Window x:Class="Kadr.App.Views.VideoControlWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Kadr" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" SizeToContent="WidthAndHeight" ShowActivated="True">
+    <Window.Resources>
+        <Style x:Key="PanelButton" TargetType="Button">
+            <Setter Property="Height" Value="34" />
+            <Setter Property="MinWidth" Value="36" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Foreground" Value="#303030" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="B" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="{StaticResource AccentLightBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ToggleIcon" TargetType="ToggleButton">
+            <Setter Property="Width" Value="36" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Foreground" Value="#303030" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="B" Background="Transparent" CornerRadius="6">
+                            <Grid>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Line x:Name="Slash" X1="8" Y1="26" X2="28" Y2="8" Stroke="#FF3B30" StrokeThickness="2" Visibility="Collapsed" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="{StaticResource AccentLightBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="False">
+                                <Setter TargetName="Slash" Property="Visibility" Value="Visible" />
+                                <Setter Property="Foreground" Value="#9A9A9A" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="White" CornerRadius="8" Padding="6,4" Margin="10" MouseLeftButtonDown="Drag_MouseDown">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.3" />
+        </Border.Effect>
+        <StackPanel Orientation="Horizontal">
+            <!-- До старта -->
+            <StackPanel x:Name="PreStartPanel" Orientation="Horizontal">
+                <Button Style="{StaticResource PanelButton}" Click="Start_Click" ToolTip="Начать запись (Enter)" FontFamily="Segoe UI" FontSize="14" FontWeight="SemiBold">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="14" Height="14" Fill="#FF3B30" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock Text="Старт" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Rectangle Width="1" Margin="4,6" Fill="#E0E0E0" />
+                <ToggleButton x:Name="CameraToggle" Style="{StaticResource ToggleIcon}" Content="&#xE722;" ToolTip="Веб-камера" IsChecked="False" Click="Camera_Click" />
+                <ToggleButton x:Name="MicToggle" Style="{StaticResource ToggleIcon}" Content="&#xE720;" ToolTip="Микрофон" Click="Mic_Click" />
+                <ToggleButton x:Name="SysToggle" Style="{StaticResource ToggleIcon}" Content="&#xE767;" ToolTip="Системный звук" Click="Sys_Click" />
+                <Button Style="{StaticResource PanelButton}" Content="&#xE8BB;" ToolTip="Отменить (Esc)" Click="CancelPre_Click" />
+            </StackPanel>
+
+            <!-- Во время записи -->
+            <StackPanel x:Name="RecordingPanel" Orientation="Horizontal" Visibility="Collapsed">
+                <Button Style="{StaticResource PanelButton}" Click="Stop_Click" ToolTip="Завершить запись">
+                    <Rectangle Width="14" Height="14" Fill="#FF3B30" RadiusX="2" RadiusY="2" />
+                </Button>
+                <TextBlock x:Name="Timer" Text="0:00" VerticalAlignment="Center" Margin="4,0,8,0" FontFamily="Segoe UI" FontSize="14" FontWeight="SemiBold" MinWidth="40" TextAlignment="Center" />
+                <Button x:Name="PauseButton" Style="{StaticResource PanelButton}" Content="&#xE769;" ToolTip="Пауза" Click="Pause_Click" />
+                <Button Style="{StaticResource PanelButton}" Content="&#xE74D;" ToolTip="Отменить запись" Click="CancelRec_Click" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

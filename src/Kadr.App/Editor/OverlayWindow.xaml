@@ -1,0 +1,42 @@
+<Window x:Class="Kadr.App.Editor.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Kadr" WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True"
+        ShowActivated="False" Background="Black" Cursor="Cross" Focusable="True" SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
+    <Grid x:Name="Root" Background="Transparent" Focusable="True" FocusVisualStyle="{x:Null}">
+        <!-- Экспортируемое содержимое: фон + объекты -->
+        <Grid x:Name="ContentLayer">
+            <Image x:Name="BackgroundImage" Stretch="Fill" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+            <Canvas x:Name="ObjectsCanvas" />
+        </Grid>
+
+        <!-- Затемнение с вырезом области -->
+        <Path x:Name="Dim" Fill="#99000000" IsHitTestVisible="False" />
+
+        <!-- Рамка выделения -->
+        <Canvas x:Name="FrameLayer">
+            <Rectangle x:Name="FrameInterior" Fill="#01000000" Cursor="SizeAll" />
+            <Rectangle x:Name="FrameBorder" Stroke="White" StrokeThickness="1" StrokeDashArray="5 3" IsHitTestVisible="False" />
+            <Border x:Name="SizeLabel" Background="#DD202020" CornerRadius="4" Padding="7,3" IsHitTestVisible="False">
+                <TextBlock x:Name="SizeText" Foreground="White" FontFamily="Verdana" FontSize="11" />
+            </Border>
+        </Canvas>
+
+        <!-- Выделение объекта -->
+        <Canvas x:Name="ObjectSelectionLayer" IsHitTestVisible="False" />
+
+        <!-- Панели -->
+        <Canvas x:Name="PanelLayer" />
+
+        <!-- Подсказка у курсора -->
+        <Canvas x:Name="HintLayer" IsHitTestVisible="False">
+            <Border x:Name="Hint" Background="#DD202020" CornerRadius="6" Padding="12,7">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="HintIcon" FontFamily="Segoe MDL2 Assets" Text="&#xE722;" Foreground="White" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <TextBlock x:Name="HintText" Text="Выделите область" Foreground="White" FontFamily="Verdana" FontSize="16" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Canvas>
+    </Grid>
+</Window>
