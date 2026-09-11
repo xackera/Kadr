@@ -8,3 +8,6 @@ TestResults/
 
 # генератор иконок держим локально
 assets/icons/icon.py
+
+# архивы сборок
+*.zip
