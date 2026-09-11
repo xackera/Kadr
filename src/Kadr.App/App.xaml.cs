@@ -45,6 +45,7 @@ public partial class App : Application
                 services.AddSingleton<OperationState>();
                 services.AddSingleton<NotificationService>();
                 services.AddSingleton<TrayService>();
+                services.AddSingleton<KeyboardHookService>();
                 services.AddSingleton<HotkeyService>();
                 services.AddSingleton<ScreenshotService>();
                 services.AddSingleton<RegionScreenshotService>();

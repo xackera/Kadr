@@ -109,6 +109,26 @@ public sealed partial class SettingsViewModel : ObservableObject
     public bool UseMouseButtonsForScreenshot { get => S.UseMouseButtonsForScreenshot; set => Set(value, (s, v) => s.UseMouseButtonsForScreenshot = v); }
     public bool UseMouseButtonsForVideo { get => S.UseMouseButtonsForVideo; set => Set(value, (s, v) => s.UseMouseButtonsForVideo = v); }
 
+    /// <summary>Windows отдаёт PrtScr «Ножницам». Kadr перехватывает клавишу раньше, но перехват можно и отключить.</summary>
+    public bool PrintScreenTakenBySystem => WindowsKeyboardSettings.PrintScreenOpensSnippingTool();
+
+    [RelayCommand]
+    private void DisableSystemPrintScreen()
+    {
+        try
+        {
+            WindowsKeyboardSettings.DisablePrintScreenForSnipping();
+            _logger.LogInformation("Системный перехват PrtScr отключён");
+            _notify.Info("Перехват PrtScr «Ножницами» отключён. Если клавиша всё ещё открывает их, перезайдите в Windows.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Не удалось отключить перехват PrtScr");
+            _notify.Error("Не удалось изменить настройку Windows: " + ex.Message);
+        }
+        OnPropertyChanged(nameof(PrintScreenTakenBySystem));
+    }
+
     private void SetHotkey(Hotkey value, Action<AppSettings, Hotkey> apply, [CallerMemberName] string? name = null)
     {
         if (!value.IsEmpty)

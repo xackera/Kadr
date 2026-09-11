@@ -55,7 +55,17 @@
                 </Grid>
                 <CheckBox Margin="0,16,0,10" Content="Две кнопки мыши одновременно для скриншота" IsChecked="{Binding UseMouseButtonsForScreenshot}" />
                 <CheckBox Content="Ctrl + Shift + две кнопки мыши одновременно для видео" IsChecked="{Binding UseMouseButtonsForVideo}" />
-                <TextBlock Style="{StaticResource Hint}" Text="В тихом режиме вызов кнопками мыши отключён." />
+                <TextBlock Style="{StaticResource Hint}" Text="Kadr перехватывает клавиши раньше других программ, поэтому занятые сочетания вроде PrtScr тоже работают. В тихом режиме вызов кнопками мыши отключён." />
+
+                <Border Margin="0,10,0,0" Padding="12,10" CornerRadius="6" Background="#FFF6E5" BorderBrush="#F6A623" BorderThickness="1"
+                        Visibility="{Binding PrintScreenTakenBySystem, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel>
+                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextBrush}"
+                                   Text="В Windows клавиша PrtScr назначена на «Ножницы». Kadr забирает её себе, но можно отключить системный перехват совсем." />
+                        <Button Content="Отключить перехват PrtScr" Style="{StaticResource FlatButton}" HorizontalAlignment="Left" Margin="0,10,0,0"
+                                Command="{Binding DisableSystemPrintScreenCommand}" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </TabItem>
 
