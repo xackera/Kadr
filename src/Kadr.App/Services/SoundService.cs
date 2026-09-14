@@ -22,19 +22,20 @@ public static class SoundService
 
     private static void Play(string? customPath, byte[] builtin)
     {
-        try
+        // Проигрываем в фоновом потоке целиком: SoundPlayer.Play() работает асинхронно, и если сразу
+        // освободить плеер вместе с потоком данных, звук обрывается или не начинается вовсе.
+        Task.Run(() =>
         {
-            if (!string.IsNullOrWhiteSpace(customPath) && File.Exists(customPath))
+            try
             {
-                using var custom = new SoundPlayer(customPath);
-                custom.Play();
-                return;
+                using var player = !string.IsNullOrWhiteSpace(customPath) && File.Exists(customPath)
+                    ? new SoundPlayer(customPath)
+                    : new SoundPlayer(new MemoryStream(builtin));
+                player.Load();
+                player.PlaySync();
             }
-            using var ms = new MemoryStream(builtin);
-            using var player = new SoundPlayer(ms);
-            player.Play();
-        }
-        catch { /* звук не критичен */ }
+            catch { /* звук не критичен */ }
+        });
     }
 
     /// <summary>Звук из ресурсов приложения; null, если ресурса нет (тогда играет синтезированный).</summary>
