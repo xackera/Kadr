@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Установщик Kadr. Самодостаточная сборка: среда .NET внутри, на машине пользователя ничего ставить не нужно.
+  Сборка: installer\build.ps1
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <?define ProductName = "Kadr" ?>
+  <?define Manufacturer = "Mike Alimov" ?>
+
+  <Package Name="$(ProductName)"
+           Manufacturer="$(Manufacturer)"
+           Version="$(Version)"
+           UpgradeCode="868acd02-39ac-4364-86ae-211517dc6b5b"
+           Scope="perMachine"
+           Compressed="yes"
+           Language="1049"
+           Codepage="1251">
+
+    <SummaryInformation Description="Kadr — скриншоты и запись экрана" Manufacturer="$(Manufacturer)" />
+
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+                  DowngradeErrorMessage="На компьютере уже установлена более новая версия Kadr." />
+
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <!--
+      Kadr требует Windows 10 сборки 19041: там появился нужный захват экрана.
+      Свойства VersionNT и WindowsBuild для этого непригодны: Windows Installer по-прежнему
+      сообщает из них версию 8.1, поэтому читаем настоящую версию из реестра.
+      CurrentMajorVersionNumber есть только начиная с Windows 10, а номера сборок
+      Windows 10 и 11 пятизначные, поэтому их корректно сравнивать как строки.
+    -->
+    <Property Id="WINMAJOR">
+      <RegistrySearch Id="SearchWinMajor" Root="HKLM" Bitness="always64"
+                      Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+                      Name="CurrentMajorVersionNumber" Type="raw" />
+    </Property>
+    <Property Id="WINBUILD">
+      <RegistrySearch Id="SearchWinBuild" Root="HKLM" Bitness="always64"
+                      Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+                      Name="CurrentBuildNumber" Type="raw" />
+    </Property>
+
+    <Launch Condition="Installed OR (WINMAJOR AND WINBUILD &gt;= &quot;19041&quot;)"
+            Message="Для Kadr нужна Windows 10 версии 2004 (сборка 19041) или новее." />
+
+    <!-- Перед установкой и удалением закрываем работающую программу -->
+    <util:CloseApplication Id="CloseKadr" Target="Kadr.exe" CloseMessage="yes" RebootPrompt="no" Timeout="5" />
+    <util:CloseApplication Id="CloseRecorder" Target="Kadr.Recorder.exe" CloseMessage="yes" RebootPrompt="no" Timeout="5" />
+
+    <Icon Id="KadrIcon" SourceFile="$(PublishDir)\Kadr.exe" />
+    <Property Id="ARPPRODUCTICON" Value="KadrIcon" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/xackera/Kadr" />
+
+    <WixVariable Id="WixUILicenseRtf" Value="$(sys.SOURCEFILEDIR)license.rtf" />
+
+    <!-- Мастер с выбором папки и предложением запустить программу в конце -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Запустить Kadr" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
+    <SetProperty Id="WixShellExecTarget" Value="[#Kadr.exe]" After="CostFinalize" Sequence="ui" />
+    <CustomAction Id="LaunchApplication" DllEntry="WixShellExec" Impersonate="yes" BinaryRef="Wix4UtilCA_X64" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="$(ProductName)" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <Feature Id="Main" Title="Kadr" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentGroupRef Id="Shortcuts" />
+    </Feature>
+
+    <!-- Все файлы самодостаточной сборки -->
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Files Include="$(PublishDir)\**" />
+    </ComponentGroup>
+
+    <ComponentGroup Id="Shortcuts">
+      <Component Id="StartMenuShortcut" Directory="ProgramMenuFolder" Guid="6b5a1d2e-0c4f-4a5e-9d3b-7f2c18e4a911">
+        <Shortcut Id="KadrStartMenu"
+                  Name="Kadr"
+                  Description="Скриншоты и запись экрана"
+                  Target="[INSTALLFOLDER]Kadr.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue Root="HKCU" Key="Software\$(Manufacturer)\$(ProductName)" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+  </Package>
+</Wix>

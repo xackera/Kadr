@@ -11,3 +11,7 @@ assets/icons/icon.py
 
 # архивы сборок
 *.zip
+
+# готовый установщик
+dist/
+*.msi

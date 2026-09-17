@@ -63,6 +63,20 @@ dotnet publish D:\Work\Kadr\code\src\Kadr.App\Kadr.App.csproj -c Release -r win-
 
 Логи: `%LocalAppData%\Kadr\log\main-*.log` (приложение) и `video-*.log` (видеомодуль).
 
+## Установщик
+
+Собирается в MSI со всей средой .NET внутри, пользователю ничего доустанавливать не нужно.
+Требуется WiX: `dotnet tool install --global wix --version 5.0.2`, затем расширения
+`wix extension add -g WixToolset.UI.wixext/5.0.2` и `wix extension add -g WixToolset.Util.wixext/5.0.2`.
+
+```bash
+powershell -ExecutionPolicy Bypass -File installer\build.ps1 -Version 1.0.0
+```
+
+Результат: `dist\Kadr-1.0.0-x64.msi`, около 58 МБ. Установщик ставит программу в `Program Files\Kadr`,
+создаёт ярлык в меню «Пуск», запись в «Программах и компонентах», закрывает работающую программу перед
+обновлением и проверяет версию Windows. Настройки в `%LocalAppData%\Kadr` при удалении сохраняются.
+
 ## Тестовые скрипты (`tests/`)
 
 - `test-record.ps1` — запись 5 секунд через `Kadr.Recorder --test` без приложения (`-Mic`, `-Sys`, `-Highlight`).
