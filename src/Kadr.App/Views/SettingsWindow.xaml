@@ -209,8 +209,7 @@
                     <Image Source="pack://application:,,,/Assets/kadr-app.ico" Width="48" Height="48" Margin="0,0,16,0" />
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="{Binding Version}" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
-                        <TextBlock Text="Скриншоты и запись экрана. Бесплатно, для личного использования
-                                   ." Foreground="{StaticResource TextMutedBrush}" />
+                        <TextBlock Text="Скриншоты и запись экрана. Бесплатно, для личного использования." Foreground="{StaticResource TextMutedBrush}" />
                     </StackPanel>
                 </StackPanel>
                 <TextBlock Text="Файлы программы" Style="{StaticResource SubHeader}" />
@@ -222,7 +221,7 @@
                 <TextBlock Text="Windows 10 (сборка 19041 и новее) и Windows 11, .NET 8." Style="{StaticResource Hint}" Margin="0,8,0,0" />
                 <TextBlock Text="Лицензия" Style="{StaticResource SubHeader}" />
                 <TextBlock Style="{StaticResource Hint}" Margin="0"
-                           Text="© Mike Alimov. Kadr распространяется по лицензии PolyForm Noncommercial 1.0.0: только для некоммерческого использования, без гарантий. Сторонние библиотеки: CommunityToolkit.Mvvm, H.NotifyIcon, Microsoft.Extensions, NAudio, Vortice.Windows (MIT), NLog (BSD-3-Clause). Кодеки, OCR и захват экрана предоставляет Windows. Kadr — независимая реализация, не связанная с программой «Скриншотер» и её разработчиком." />
+                           Text="© Mike Alimov. Kadr распространяется по лицензии PolyForm Noncommercial 1.0.0: только для некоммерческого использования, без гарантий. Сторонние библиотеки: CommunityToolkit.Mvvm, H.NotifyIcon, Microsoft.Extensions, NAudio, Vortice.Windows (MIT), NLog (BSD-3-Clause). Кодеки, OCR и захват экрана предоставляет Windows." />
             </StackPanel>
         </TabItem>
     </TabControl>

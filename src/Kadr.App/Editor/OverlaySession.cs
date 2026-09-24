@@ -75,18 +75,21 @@ public sealed class OverlaySession
         return session._completion.Task;
     }
 
+    private System.Drawing.Bitmap? Capture(MonitorInfo monitor)
+    {
+        try { return ScreenCapture.CaptureMonitor(monitor, Settings.CaptureCursor); }
+        catch (Exception ex) { _logger.LogError(ex, "Не удалось снять монитор {Monitor}", monitor); return null; }
+    }
+
     private void Open()
     {
         var monitors = Monitors.All();
         var cursor = NativeMethods.CursorPosition();
         foreach (var m in monitors)
         {
-            System.Drawing.Bitmap? background = null;
-            if (Mode == OverlayMode.Screenshot)
-            {
-                try { background = ScreenCapture.CaptureMonitor(m, Settings.CaptureCursor); }
-                catch (Exception ex) { _logger.LogError(ex, "Не удалось снять монитор {Monitor}", m); }
-            }
+            // Окно сразу копирует снимок в BitmapSource, поэтому GDI-битмап освобождаем здесь же:
+            // на 4K он весит десятки мегабайт, и ждать финализатора при серии скриншотов слишком долго.
+            using var background = Mode == OverlayMode.Screenshot ? Capture(m) : null;
             Windows.Add(new OverlayWindow(this, m, background));
         }
         foreach (var w in Windows) w.Show();

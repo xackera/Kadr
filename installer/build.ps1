@@ -1,7 +1,7 @@
 ﻿# Сборка установщика Kadr: самодостаточная публикация + MSI.
 # Требуется .NET SDK и WiX:  dotnet tool install --global wix
 param(
-    [string]$Version = "1.0.0",
+    [string]$Version = "1.0.1",
     [switch]$SkipPublish
 )
 $ErrorActionPreference = "Stop"

@@ -70,10 +70,10 @@ dotnet publish D:\Work\Kadr\code\src\Kadr.App\Kadr.App.csproj -c Release -r win-
 `wix extension add -g WixToolset.UI.wixext/5.0.2` и `wix extension add -g WixToolset.Util.wixext/5.0.2`.
 
 ```bash
-powershell -ExecutionPolicy Bypass -File installer\build.ps1 -Version 1.0.0
+powershell -ExecutionPolicy Bypass -File installer\build.ps1 -Version 1.0.1
 ```
 
-Результат: `dist\Kadr-1.0.0-x64.msi`, около 58 МБ. Установщик ставит программу в `Program Files\Kadr`,
+Результат: `dist\Kadr-1.0.1-x64.msi`, около 58 МБ. Установщик ставит программу в `Program Files\Kadr`,
 создаёт ярлык в меню «Пуск», запись в «Программах и компонентах», закрывает работающую программу перед
 обновлением и проверяет версию Windows. Настройки в `%LocalAppData%\Kadr` при удалении сохраняются.
 

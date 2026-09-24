@@ -9,19 +9,20 @@ public partial class TrayPanelWindow : Window
 {
     private static TrayPanelWindow? _current;
     private readonly AppCommands _commands;
+    private bool _closing;
 
     private TrayPanelWindow(AppCommands commands)
     {
         _commands = commands;
         InitializeComponent();
-        Deactivated += (_, _) => Close();
-        PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape) Close(); };
+        Deactivated += (_, _) => CloseOnce();
+        PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape) CloseOnce(); };
         Closed += (_, _) => { if (_current == this) _current = null; };
     }
 
     public static void ShowNearCursor(AppCommands commands)
     {
-        if (_current is not null) { _current.Close(); return; }
+        if (_current is not null) { _current.CloseOnce(); return; }
         var w = new TrayPanelWindow(commands);
         _current = w;
         w.Show();
@@ -38,7 +39,15 @@ public partial class TrayPanelWindow : Window
         w.Activate();
     }
 
-    private void Screenshot_Click(object sender, RoutedEventArgs e) { Close(); _commands.ScreenshotRegion(); }
-    private void Video_Click(object sender, RoutedEventArgs e) { Close(); _commands.ToggleVideo(); }
-    private void Scroll_Click(object sender, RoutedEventArgs e) { Close(); _commands.ScrollingCapture(); }
+    private void Screenshot_Click(object sender, RoutedEventArgs e) { CloseOnce(); _commands.ScreenshotRegion(); }
+    private void Video_Click(object sender, RoutedEventArgs e) { CloseOnce(); _commands.ToggleVideo(); }
+    private void Scroll_Click(object sender, RoutedEventArgs e) { CloseOnce(); _commands.ScrollingCapture(); }
+
+    /// <summary>Закрыть один раз: закрытие снимает фокус, а Deactivated иначе позвал бы Close повторно.</summary>
+    private void CloseOnce()
+    {
+        if (_closing) return;
+        _closing = true;
+        Close();
+    }
 }
