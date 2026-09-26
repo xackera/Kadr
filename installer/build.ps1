@@ -1,32 +1,35 @@
 ﻿# Сборка установщика Kadr: самодостаточная публикация + MSI.
 # Требуется .NET SDK и WiX:  dotnet tool install --global wix
+# Архитектура: x64 (по умолчанию) или arm64; ARM64-сборка кросс-компилируется на обычном x64-компьютере.
 param(
     [string]$Version = "1.0.1",
+    [ValidateSet("x64", "arm64")]
+    [string]$Arch = "x64",
     [switch]$SkipPublish
 )
 $ErrorActionPreference = "Stop"
 
 $root      = Split-Path $PSScriptRoot -Parent
-$publish   = Join-Path $root "publish"
+$publish   = Join-Path $root $(if ($Arch -eq "x64") { "publish" } else { "publish-$Arch" })
 $dist      = Join-Path $root "dist"
 $wix       = Join-Path $env:USERPROFILE ".dotnet\tools\wix.exe"
 if (-not (Test-Path $wix)) { $wix = "wix" }
 
 if (-not $SkipPublish) {
-    Write-Host "Публикация самодостаточной сборки..."
+    Write-Host "Публикация самодостаточной сборки ($Arch)..."
     Get-Process Kadr, Kadr.Recorder -ErrorAction SilentlyContinue | Stop-Process -Force
     Remove-Item -Recurse -Force $publish -ErrorAction SilentlyContinue
-    dotnet publish (Join-Path $root "src\Kadr.Recorder\Kadr.Recorder.csproj") -c Release -r win-x64 --self-contained true -o $publish --nologo -v q
-    dotnet publish (Join-Path $root "src\Kadr.App\Kadr.App.csproj")          -c Release -r win-x64 --self-contained true -o $publish --nologo -v q
+    dotnet publish (Join-Path $root "src\Kadr.Recorder\Kadr.Recorder.csproj") -c Release -r win-$Arch --self-contained true -o $publish --nologo -v q
+    dotnet publish (Join-Path $root "src\Kadr.App\Kadr.App.csproj")          -c Release -r win-$Arch --self-contained true -o $publish --nologo -v q
     Copy-Item (Join-Path $root "LICENSE"), (Join-Path $root "THIRD-PARTY-NOTICES.md") $publish -Force
 }
 
 New-Item -ItemType Directory -Force $dist | Out-Null
-$msi = Join-Path $dist "Kadr-$Version-x64.msi"
+$msi = Join-Path $dist "Kadr-$Version-$Arch.msi"
 
 Write-Host "Сборка $msi ..."
 & $wix build (Join-Path $PSScriptRoot "Kadr.wxs") `
-    -arch x64 `
+    -arch $Arch `
     -culture ru-RU `
     -ext WixToolset.UI.wixext `
     -ext WixToolset.Util.wixext `

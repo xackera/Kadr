@@ -10,6 +10,13 @@
   <?define ProductName = "Kadr" ?>
   <?define Manufacturer = "Mike Alimov" ?>
 
+  <!-- Библиотека действий WiX Util под архитектуру пакета (задаётся ключом wix build -arch) -->
+  <?if $(sys.BUILDARCH) = arm64 ?>
+    <?define UtilCA = "Wix4UtilCA_A64" ?>
+  <?else?>
+    <?define UtilCA = "Wix4UtilCA_X64" ?>
+  <?endif?>
+
   <Package Name="$(ProductName)"
            Manufacturer="$(Manufacturer)"
            Version="$(Version)"
@@ -64,7 +71,7 @@
     <Property Id="INSTALLDESKTOPSHORTCUT" Value="1" Secure="yes" />
 
     <SetProperty Id="WixShellExecTarget" Value="[INSTALLFOLDER]Kadr.exe" After="CostFinalize" Sequence="ui" />
-    <CustomAction Id="LaunchApplication" DllEntry="WixShellExec" Impersonate="yes" BinaryRef="Wix4UtilCA_X64" />
+    <CustomAction Id="LaunchApplication" DllEntry="WixShellExec" Impersonate="yes" BinaryRef="$(UtilCA)" />
 
     <UI>
       <!-- Своя страница с дополнительными задачами между выбором папки и подтверждением -->
