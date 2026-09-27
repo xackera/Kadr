@@ -50,6 +50,19 @@ public static class Exporter
         return frame;
     }
 
+    /// <summary>Заготовка для инструмента «инвертор»: негатив снимка, прозрачность сохраняется.</summary>
+    public static BitmapSource MakeInverted(BitmapSource source)
+    {
+        var bgra = new FormatConvertedBitmap(source, PixelFormats.Bgra32, null, 0);
+        int width = bgra.PixelWidth, height = bgra.PixelHeight, stride = width * 4;
+        var pixels = new byte[stride * height];
+        bgra.CopyPixels(pixels, stride, 0);
+        foreach (ref var px in System.Runtime.InteropServices.MemoryMarshal.Cast<byte, uint>(pixels)) px ^= 0x00FFFFFF;
+        var inverted = BitmapSource.Create(width, height, source.DpiX, source.DpiY, PixelFormats.Bgra32, null, pixels, stride);
+        inverted.Freeze();
+        return inverted;
+    }
+
     /// <summary>Заготовка для инструмента «размытие»: уменьшить в factor раз и растянуть обратно.</summary>
     public static BitmapSource MakeBlurred(BitmapSource source, double factor = 8)
     {

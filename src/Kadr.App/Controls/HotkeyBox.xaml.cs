@@ -24,6 +24,16 @@ public partial class HotkeyBox : UserControl
         set => SetValue(HotkeyProperty, value);
     }
 
+    public static readonly DependencyProperty AllowPlainKeysProperty = DependencyProperty.Register(
+        nameof(AllowPlainKeys), typeof(bool), typeof(HotkeyBox), new PropertyMetadata(false));
+
+    /// <summary>Разрешить любую клавишу без модификаторов (для клавиш редактора, а не глобальных хоткеев).</summary>
+    public bool AllowPlainKeys
+    {
+        get => (bool)GetValue(AllowPlainKeysProperty);
+        set => SetValue(AllowPlainKeysProperty, value);
+    }
+
     private bool _capturing;
     private string? _preview;
 
@@ -96,7 +106,7 @@ public partial class HotkeyBox : UserControl
             Alt: mods.HasFlag(ModifierKeys.Alt),
             Shift: mods.HasFlag(ModifierKeys.Shift),
             Win: mods.HasFlag(ModifierKeys.Windows));
-        if (!hk.IsValid)
+        if (AllowPlainKeys ? VirtualKeys.IsModifier(hk.Key) : !hk.IsValid)
         {
             _preview = "Недопустимое сочетание";
             Render();

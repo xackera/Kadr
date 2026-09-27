@@ -3,6 +3,7 @@ using System.Windows.Media;
 using Kadr.App.Editor.Objects;
 using Kadr.App.Services;
 using Kadr.Capture;
+using Kadr.Common.Hotkeys;
 using Kadr.Common.Settings;
 using Microsoft.Extensions.Logging;
 
@@ -46,6 +47,10 @@ public sealed class OverlaySession
     public VisualObject? LastObject { get; set; }
     public System.Windows.Controls.PrintDialog? PrintDialog { get; private set; }
 
+    /// <summary>Клавиши команд редактора на время сессии (из настроек, уже без конфликтов).</summary>
+    private readonly Dictionary<EditorCommand, Hotkey> _keys;
+    private readonly Dictionary<Hotkey, EditorCommand> _commandsByKey;
+
     /// <summary>Любое изменение состояния: окна перерисовывают рамку, панели, курсор.</summary>
     public event Action? Changed;
 
@@ -56,6 +61,8 @@ public sealed class OverlaySession
         EditorEnabled = editorEnabled;
         _logger = logger;
         Shadows = settings.DrawObjectShadows;
+        _keys = EditorKeys.All.ToDictionary(c => c, c => EditorKeys.Get(settings, c));
+        _commandsByKey = _keys.Where(k => !k.Value.IsEmpty).ToDictionary(k => k.Value, k => k.Key);
         Thickness = Math.Clamp(settings.EditorLineThickness, VisualObject.MinThickness, VisualObject.MaxThickness);
         Color = TryParseColor(settings.EditorColor) ?? DefaultPalette[2];
         Palette = settings.EditorAvailableColors.Select(TryParseColor).Where(c => c.HasValue).Select(c => c!.Value).ToList();
@@ -163,6 +170,20 @@ public sealed class OverlaySession
         Tool = tool;
         SelectedObject = null;
         SetState(tool == DrawingTool.None ? OverlayState.Selected : OverlayState.ToolSelected);
+    }
+
+    public Hotkey KeyOf(EditorCommand command) => _keys[command];
+
+    public bool TryGetCommand(Hotkey key, out EditorCommand command) => _commandsByKey.TryGetValue(key, out command);
+
+    public void Execute(EditorCommand command)
+    {
+        switch (command)
+        {
+            case EditorCommand.ThicknessUp: if (Mode == OverlayMode.Screenshot) SetThickness(Thickness + 2); break;
+            case EditorCommand.ThicknessDown: if (Mode == OverlayMode.Screenshot) SetThickness(Thickness - 2); break;
+            default: if (EditorKeys.ToolOf(command) is { } tool) SelectTool(tool, false); break;
+        }
     }
 
     public void SelectObject(VisualObject? obj)

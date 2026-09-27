@@ -17,7 +17,7 @@ public static class VirtualKeys
         [Snapshot] = "PrtScr", [Insert] = "Insert", [Delete] = "Delete", [NumLock] = "NumLock",
         [ScrollLock] = "ScrollLock",
         [0x6A] = "NumPad*", [0x6B] = "NumPad+", [0x6D] = "NumPad-", [0x6E] = "NumPad.", [0x6F] = "NumPad/",
-        [0xBA] = ";", [0xBB] = "=", [0xBC] = ",", [0xBD] = "-", [0xBE] = ".", [0xBF] = "/", [0xC0] = "`",
+        [0xBA] = ";", [0xBB] = "+", [0xBC] = ",", [0xBD] = "-", [0xBE] = ".", [0xBF] = "/", [0xC0] = "`",
         [0xDB] = "[", [0xDC] = "\\", [0xDD] = "]", [0xDE] = "'",
     };
 

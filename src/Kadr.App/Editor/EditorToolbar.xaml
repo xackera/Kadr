@@ -71,38 +71,48 @@
             <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.3" />
         </Border.Effect>
         <StackPanel Orientation="Horizontal">
-            <ToggleButton x:Name="BtnArrow" Style="{StaticResource ToolButton}" ToolTip="Стрелка (A). Удерживайте Shift для рисования по горизонтали или вертикали." Click="Tool_Click" Tag="Arrow">
+            <ToggleButton x:Name="BtnArrow" Style="{StaticResource ToolButton}" Click="Tool_Click" Tag="Arrow">
                 <Path Style="{StaticResource Icon}" Data="M4,16 L16,4 M9,4 L16,4 L16,11" />
             </ToggleButton>
-            <ToggleButton x:Name="BtnLine" Style="{StaticResource ToolButton}" ToolTip="Линия (L). Удерживайте Shift для рисования по горизонтали или вертикали." Click="Tool_Click" Tag="Line">
+            <ToggleButton x:Name="BtnLine" Style="{StaticResource ToolButton}" Click="Tool_Click" Tag="Line">
                 <Path Style="{StaticResource Icon}" Data="M4,16 L16,4" />
             </ToggleButton>
-            <ToggleButton x:Name="BtnPensil" Style="{StaticResource ToolButton}" ToolTip="Карандаш (P). Удерживайте Shift для рисования по горизонтали или вертикали." Click="Tool_Click" Tag="Pensil">
+            <ToggleButton x:Name="BtnPensil" Style="{StaticResource ToolButton}" Click="Tool_Click" Tag="Pensil">
                 <Path Style="{StaticResource Icon}" Data="M4,16 L5,12 L13,4 L16,7 L8,15 Z M11,6 L14,9" />
             </ToggleButton>
-            <ToggleButton x:Name="BtnMarker" Style="{StaticResource ToolButton}" ToolTip="Маркер (M). Удерживайте Shift для рисования по горизонтали или вертикали." Click="Tool_Click" Tag="Marker">
+            <ToggleButton x:Name="BtnMarker" Style="{StaticResource ToolButton}" Click="Tool_Click" Tag="Marker">
                 <Path Style="{StaticResource Icon}" StrokeThickness="4" Data="M4,15 L15,4" />
             </ToggleButton>
-            <ToggleButton x:Name="BtnRectangle" Style="{StaticResource ToolButton}" ToolTip="Прямоугольник (R). Удерживайте Shift для рисования квадрата." Click="Tool_Click" Tag="Rectangle">
+            <ToggleButton x:Name="BtnRectangle" Style="{StaticResource ToolButton}" Click="Tool_Click" Tag="Rectangle">
                 <Path Style="{StaticResource Icon}" Data="M3.5,5.5 H16.5 V14.5 H3.5 Z" />
             </ToggleButton>
-            <ToggleButton x:Name="BtnOval" Style="{StaticResource ToolButton}" ToolTip="Овал (O). Удерживайте Shift для рисования круга." Click="Tool_Click" Tag="Oval">
+            <ToggleButton x:Name="BtnFilledRectangle" Style="{StaticResource ToolButton}" Click="Tool_Click" Tag="FilledRectangle">
+                <Path Style="{StaticResource Icon}" Fill="{Binding Stroke, RelativeSource={RelativeSource Self}}" Data="M3.5,5.5 H16.5 V14.5 H3.5 Z" />
+            </ToggleButton>
+            <ToggleButton x:Name="BtnOval" Style="{StaticResource ToolButton}" Click="Tool_Click" Tag="Oval">
                 <Path Style="{StaticResource Icon}" Data="M10,4.5 A6.5,5.5 0 1 1 9.99,4.5 Z" />
             </ToggleButton>
-            <ToggleButton x:Name="BtnText" Style="{StaticResource ToolButton}" ToolTip="Текст (T)" Click="Tool_Click" Tag="Text">
+            <ToggleButton x:Name="BtnText" Style="{StaticResource ToolButton}" Click="Tool_Click" Tag="Text">
                 <TextBlock Text="T" FontFamily="Georgia" FontWeight="Bold" FontSize="18" />
             </ToggleButton>
-            <ToggleButton x:Name="BtnNumber" Style="{StaticResource ToolButton}" ToolTip="Числовая метка (N)" Click="Tool_Click" Tag="Number">
+            <ToggleButton x:Name="BtnNumber" Style="{StaticResource ToolButton}" Click="Tool_Click" Tag="Number">
                 <Grid Width="20" Height="20">
                     <Ellipse Stroke="#303030" StrokeThickness="1.8" Width="18" Height="18" />
                     <TextBlock Text="1" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Grid>
             </ToggleButton>
-            <ToggleButton x:Name="BtnBlur" Style="{StaticResource ToolButton}" ToolTip="Размытие (B)" Click="Tool_Click" Tag="Blur">
+            <ToggleButton x:Name="BtnBlur" Style="{StaticResource ToolButton}" Click="Tool_Click" Tag="Blur">
                 <Path Style="{StaticResource Icon}" StrokeThickness="0" Fill="#303030" Data="M4,4 H8 V8 H4 Z M12,4 H16 V8 H12 Z M8,8 H12 V12 H8 Z M4,12 H8 V16 H4 Z M12,12 H16 V16 H12 Z" />
             </ToggleButton>
+            <ToggleButton x:Name="BtnInvert" Style="{StaticResource ToolButton}" Click="Tool_Click" Tag="Invert">
+                <Grid Width="20" Height="20">
+                    <Path Style="{StaticResource Icon}" Data="M10,3.5 A6.5,6.5 0 1 1 9.99,3.5 Z" />
+                    <Path Style="{StaticResource Icon}" StrokeThickness="0" Fill="{Binding Stroke, RelativeSource={RelativeSource Self}}"
+                          Data="M10,3.5 A6.5,6.5 0 0 1 10,16.5 Z" />
+                </Grid>
+            </ToggleButton>
             <Rectangle Width="1" Margin="4,4" Fill="#E0E0E0" />
-            <Button x:Name="BtnThickness" Style="{StaticResource IconButton}" ToolTip="Выбрать толщину линии (колесико мыши)" Click="Thickness_Click">
+            <Button x:Name="BtnThickness" Style="{StaticResource IconButton}" ToolTip="Толщина линии" Click="Thickness_Click">
                 <Path Style="{StaticResource Icon}" Data="M4,5 H16 M4,10 H16 M4,15 H16" StrokeThickness="1" />
             </Button>
             <Button x:Name="BtnColor" Style="{StaticResource IconButton}" ToolTip="Выбрать цвет" Click="Color_Click">

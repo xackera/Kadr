@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Kadr.Common.Hotkeys;
 using Kadr.Common.Settings;
 
 namespace Kadr.App.Editor;
@@ -24,10 +25,38 @@ public partial class EditorToolbar : UserControl
         _buttons = new()
         {
             [DrawingTool.Arrow] = BtnArrow, [DrawingTool.Line] = BtnLine, [DrawingTool.Pensil] = BtnPensil,
-            [DrawingTool.Marker] = BtnMarker, [DrawingTool.Rectangle] = BtnRectangle, [DrawingTool.Oval] = BtnOval,
+            [DrawingTool.Marker] = BtnMarker, [DrawingTool.Rectangle] = BtnRectangle,
+            [DrawingTool.FilledRectangle] = BtnFilledRectangle, [DrawingTool.Oval] = BtnOval,
             [DrawingTool.Text] = BtnText, [DrawingTool.Number] = BtnNumber, [DrawingTool.Blur] = BtnBlur,
+            [DrawingTool.Invert] = BtnInvert,
         };
     }
+
+    /// <summary>Подсказки кнопок с клавишами, назначенными в настройках.</summary>
+    public void SetKeyHints(Func<EditorCommand, Hotkey> keyOf)
+    {
+        foreach (var command in EditorKeys.All)
+        {
+            if (EditorKeys.ToolOf(command) is not { } tool || !_buttons.TryGetValue(tool, out var button)) continue;
+            button.ToolTip = WithKey(EditorCommandInfo.Title(command), keyOf(command)) + ToolHint(tool);
+        }
+        var up = keyOf(EditorCommand.ThicknessUp);
+        var down = keyOf(EditorCommand.ThicknessDown);
+        var keys = up.IsEmpty && down.IsEmpty ? "" : $", клавиши {(up.IsEmpty ? "—" : up)} и {(down.IsEmpty ? "—" : down)}";
+        BtnThickness.ToolTip = $"Толщина линии (колесико мыши{keys})";
+    }
+
+    private static string WithKey(string title, Hotkey key) => key.IsEmpty ? title : $"{title} ({key})";
+
+    private static string ToolHint(DrawingTool tool) => tool switch
+    {
+        DrawingTool.Arrow or DrawingTool.Line or DrawingTool.Pensil or DrawingTool.Marker
+            => ". Удерживайте Shift для рисования по горизонтали или вертикали.",
+        DrawingTool.Rectangle or DrawingTool.FilledRectangle => ". Удерживайте Shift для рисования квадрата.",
+        DrawingTool.Oval => ". Удерживайте Shift для рисования круга.",
+        DrawingTool.Invert => ". Меняет цвета снимка в области на противоположные.",
+        _ => "",
+    };
 
     public void SetTool(DrawingTool tool)
     {

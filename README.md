@@ -2,11 +2,15 @@
 
 Бесплатная программа для скриншотов и записи экрана под Windows 10 (сборка 19041 и новее) и Windows 11.
 
+Что нового в каждой версии — в [CHANGELOG.md](CHANGELOG.md).
+
 ## Возможности
 
 - **Скриншоты**: область (`PrtScr`), активное окно (`Alt+PrtScr`), активный монитор (`Shift+PrtScr`), все мониторы (`Ctrl+PrtScr`).
-- **Редактор поверх экрана**: стрелка, линия, карандаш, маркер, прямоугольник, овал, текст, числовая метка, размытие;
-  выделение и перемещение объектов, ресайз за ручки, undo/redo, палитра и свой цвет, толщина колесом мыши, тени.
+- **Редактор поверх экрана**: стрелка, линия, карандаш, маркер, прямоугольник, прямоугольник с заливкой, овал, текст,
+  числовая метка, размытие, инвертор; выделение и перемещение объектов, ресайз за ручки, undo/redo, палитра и свой цвет,
+  толщина колесом мыши или клавишами `+`/`-`, тени. Клавиши инструментов переназначаются в настройках, степень затемнения
+  экрана вокруг области настраивается.
   Действия: копировать (`Ctrl+C`), сохранить (`Ctrl+S`), печать (`Ctrl+P`), распознать текст (OCR Windows), готово (`Enter`), закрыть (`Esc`).
 - **Скриншот с прокруткой**: автопрокрутка колесом, склейка кадров детектором сдвига, превью, автостоп по концу страницы.
 - **Запись видео** (`Ctrl+Shift+PrtScr`, пауза `Shift+Pause`): MP4 H.264 + AAC через Windows.Graphics.Capture и Media Foundation,
@@ -69,20 +73,20 @@ dotnet publish D:\Work\Kadr\code\src\Kadr.App\Kadr.App.csproj -c Release -r win-
 `wix extension add -g WixToolset.UI.wixext/5.0.2` и `wix extension add -g WixToolset.Util.wixext/5.0.2`.
 
 ```bash
-powershell -ExecutionPolicy Bypass -File installer\build.ps1 -Version 1.0.1
+powershell -ExecutionPolicy Bypass -File installer\build.ps1 -Version 1.1.0
 ```
 
-Результат: `dist\Kadr-1.0.1-x64.msi`, около 58 МБ. Установщик ставит программу в `Program Files\Kadr`,
+Результат: `dist\Kadr-1.1.0-x64.msi`, около 58 МБ. Установщик ставит программу в `Program Files\Kadr`,
 создаёт ярлык в меню «Пуск», запись в «Программах и компонентах», закрывает работающую программу перед
 обновлением и проверяет версию Windows. Настройки в `%LocalAppData%\Kadr` при удалении сохраняются.
 
 Сборка под ARM64 (Windows на Snapdragon) делается на обычном x64-компьютере, ничего дополнительно ставить не нужно:
 
 ```bash
-powershell -ExecutionPolicy Bypass -File installer\build.ps1 -Version 1.0.1 -Arch arm64
+powershell -ExecutionPolicy Bypass -File installer\build.ps1 -Version 1.1.0 -Arch arm64
 ```
 
-Результат: `dist\Kadr-1.0.1-arm64.msi`. Публикация идёт в `publish-arm64`, x64-сборка в `publish` не затрагивается.
+Результат: `dist\Kadr-1.1.0-arm64.msi`. Публикация идёт в `publish-arm64`, x64-сборка в `publish` не затрагивается.
 x64-версия на Windows 11 ARM тоже работает — через эмуляцию; нативная сборка быстрее и экономнее к батарее.
 
 ## Тестовые скрипты (`tests/`)

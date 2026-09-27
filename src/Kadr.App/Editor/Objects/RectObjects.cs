@@ -62,6 +62,21 @@ public sealed class RectangleObject : RectObject
     }
 }
 
+/// <summary>Прямоугольник, залитый выбранным цветом: закрыть фрагмент или подложить плашку под текст.</summary>
+public sealed class FilledRectangleObject : RectObject
+{
+    public override DrawingTool Tool => DrawingTool.FilledRectangle;
+
+    public override void Render()
+    {
+        Path.Stroke = null;
+        Path.Fill = new SolidColorBrush(Color);
+        var radius = Math.Min(Thickness * 0.3, Math.Min(Rect.Width, Rect.Height) / 4);
+        Path.Data = new RectangleGeometry(Rect, radius, radius);
+        ApplyShadow(Path);
+    }
+}
+
 public sealed class OvalObject : RectObject
 {
     public override DrawingTool Tool => DrawingTool.Oval;
@@ -75,27 +90,31 @@ public sealed class OvalObject : RectObject
     }
 }
 
-/// <summary>Размытие: прямоугольник, залитый заранее размытым снимком экрана. Всегда под остальными объектами.</summary>
-public sealed class BlurObject : RectObject
+/// <summary>
+/// Прямоугольник, залитый заранее обработанным снимком экрана: размытым (Blur) или инвертированным (Invert).
+/// Меняет только сам снимок, поэтому всегда лежит под остальными объектами.
+/// </summary>
+public sealed class ImageFillObject : RectObject
 {
-    private readonly BitmapSource _blurred;
+    private readonly BitmapSource _image;
     private readonly Size _surface;
 
-    public BlurObject(BitmapSource blurred, Size surfaceSize)
+    public ImageFillObject(DrawingTool tool, BitmapSource processed, Size surfaceSize)
     {
-        _blurred = blurred;
+        Tool = tool;
+        _image = processed;
         _surface = surfaceSize;
         Path.IsHitTestVisible = false;
     }
 
-    public override DrawingTool Tool => DrawingTool.Blur;
+    public override DrawingTool Tool { get; }
 
     public override void Render()
     {
         Path.Stroke = null;
         Path.Data = new RectangleGeometry(Rect);
         if (Rect.Width <= 0 || Rect.Height <= 0 || _surface.Width <= 0) { Path.Fill = null; return; }
-        Path.Fill = new ImageBrush(_blurred)
+        Path.Fill = new ImageBrush(_image)
         {
             ViewboxUnits = BrushMappingMode.RelativeToBoundingBox,
             Viewbox = new Rect(Rect.X / _surface.Width, Rect.Y / _surface.Height, Rect.Width / _surface.Width, Rect.Height / _surface.Height),

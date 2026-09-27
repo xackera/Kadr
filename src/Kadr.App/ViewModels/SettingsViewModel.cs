@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Kadr.App.Editor;
 using Kadr.App.Services;
 using Kadr.App.Startup;
 using Kadr.Common.Files;
@@ -15,6 +16,25 @@ using Microsoft.Win32;
 namespace Kadr.App.ViewModels;
 
 public sealed record Option<T>(T Key, string Value);
+
+/// <summary>Строка списка клавиш редактора: подпись команды и её сочетание; изменения проверяет модель настроек.</summary>
+public sealed class EditorKeyRow : ObservableObject
+{
+    private readonly SettingsViewModel _owner;
+
+    public EditorKeyRow(SettingsViewModel owner, EditorCommand command)
+    {
+        _owner = owner;
+        Command = command;
+        Title = EditorCommandInfo.Title(command);
+    }
+
+    public EditorCommand Command { get; }
+    public string Title { get; }
+    public Hotkey Hotkey { get => _owner.GetEditorKey(Command); set => _owner.SetEditorKey(this, value); }
+
+    public void Refresh() => OnPropertyChanged(nameof(Hotkey));
+}
 
 /// <summary>Модель окна настроек: каждое свойство читает текущие настройки и сохраняет их сразу при изменении.</summary>
 public sealed partial class SettingsViewModel : ObservableObject
@@ -30,6 +50,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _paths = paths;
         _notify = notify;
         _logger = logger;
+        EditorKeyRows = EditorKeys.All.Select(c => new EditorKeyRow(this, c)).ToList();
     }
 
     private AppSettings S => _store.Current;
@@ -133,6 +154,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         if (!value.IsEmpty)
         {
+            if (EditorCommandFor(value) is { } editorCommand)
+            {
+                _notify.Warning($"Сочетание {value} уже назначено в редакторе: «{EditorCommandInfo.Title(editorCommand)}».");
+                OnPropertyChanged(name);
+                return;
+            }
             var all = new[] { S.HotkeyRegionScreenshot, S.HotkeyActiveWindowScreenshot, S.HotkeyActiveMonitorScreenshot,
                               S.HotkeyDesktopScreenshot, S.HotkeyVideoRecording, S.HotkeyVideoPause };
             var probe = S.Clone(); apply(probe, Hotkey.Empty);
@@ -146,6 +173,57 @@ public sealed partial class SettingsViewModel : ObservableObject
             }
         }
         Set(value, apply, name);
+    }
+
+    // ---- Клавиши редактора
+
+    public IReadOnlyList<EditorKeyRow> EditorKeyRows { get; }
+
+    public IReadOnlyList<Option<string>> FixedEditorKeys { get; } =
+        EditorCommandInfo.FixedKeys.Select(k => new Option<string>(k.Action, k.Keys)).ToList();
+
+    internal Hotkey GetEditorKey(EditorCommand command) => EditorKeys.Get(S, command);
+
+    private IEnumerable<Hotkey> GlobalHotkeys() => new[]
+    {
+        S.HotkeyRegionScreenshot, S.HotkeyActiveWindowScreenshot, S.HotkeyActiveMonitorScreenshot,
+        S.HotkeyDesktopScreenshot, S.HotkeyVideoRecording, S.HotkeyVideoPause,
+    };
+
+    private EditorCommand? EditorCommandFor(Hotkey key, EditorCommand? except = null)
+    {
+        foreach (var command in EditorKeys.All)
+            if (command != except && EditorKeys.Get(S, command) == key) return command;
+        return null;
+    }
+
+    internal void SetEditorKey(EditorKeyRow row, Hotkey value)
+    {
+        if (!value.IsEmpty)
+        {
+            string? problem = null;
+            if (EditorKeys.IsReserved(value)) problem = "занято встроенным действием редактора (см. список ниже)";
+            else if (!EditorKeys.IsAssignable(value)) problem = "нельзя назначить";
+            else if (GlobalHotkeys().Contains(value)) problem = "уже назначено глобальному хоткею";
+            else if (EditorCommandFor(value, row.Command) is { } other) problem = $"уже назначено: «{EditorCommandInfo.Title(other)}»";
+            if (problem is not null)
+            {
+                _notify.Warning($"Сочетание {value} {problem}.");
+                row.Refresh();
+                return;
+            }
+        }
+        // Словарь заменяется целиком: старый снимок настроек в событии Changed не должен меняться вместе с новым.
+        var map = new Dictionary<string, Hotkey>(S.EditorHotkeys) { [row.Command.ToString()] = value };
+        _store.Update(s => s.EditorHotkeys = map);
+        row.Refresh();
+    }
+
+    [RelayCommand]
+    private void ResetEditorKeys()
+    {
+        _store.Update(s => s.EditorHotkeys = new Dictionary<string, Hotkey>());
+        foreach (var row in EditorKeyRows) row.Refresh();
     }
 
     // ---- Скриншоты
@@ -267,6 +345,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     public bool ShowEditor { get => S.ShowEditor; set => Set(value, (s, v) => s.ShowEditor = v); }
     public EditorDefaultElement EditorDefaultElement { get => S.EditorDefaultElement; set => Set(value, (s, v) => s.EditorDefaultElement = v); }
     public bool DrawObjectShadows { get => S.DrawObjectShadows; set => Set(value, (s, v) => s.DrawObjectShadows = v); }
+    public int OverlayDimPercent { get => S.OverlayDimPercent; set => Set(Math.Clamp(value, 0, 90), (s, v) => s.OverlayDimPercent = v); }
 
     // ---- Видео
 

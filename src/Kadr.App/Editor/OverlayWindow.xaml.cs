@@ -7,6 +7,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Kadr.App.Editor.Objects;
 using Kadr.Capture;
+using Kadr.Common.Hotkeys;
 using Kadr.Common.Settings;
 using Microsoft.Win32;
 using Rectangle = System.Windows.Shapes.Rectangle;
@@ -30,6 +31,7 @@ public partial class OverlayWindow : Window
     private readonly Dictionary<HandleKind, Rectangle> _frameHandles = new();
     private readonly BitmapSource? _background;
     private BitmapSource? _blurred;
+    private BitmapSource? _inverted;
     private EditorToolbar? _toolbar;
     private ActionPanel? _actions;
 
@@ -67,6 +69,10 @@ public partial class OverlayWindow : Window
             BackgroundImage.Visibility = Visibility.Collapsed;
         }
 
+        var dim = new SolidColorBrush(Color.FromArgb((byte)Math.Round(session.Settings.OverlayDimPercent * 2.55), 0, 0, 0));
+        dim.Freeze();
+        Dim.Fill = dim;
+
         foreach (var kind in FrameHandleKinds)
         {
             var h = new Rectangle
@@ -86,6 +92,7 @@ public partial class OverlayWindow : Window
             _toolbar.ColorChanged += c => _session.SetColor(c);
             _toolbar.CustomColorRequested += PickCustomColor;
             _toolbar.UndoRequested += () => _session.UndoLast();
+            _toolbar.SetKeyHints(_session.KeyOf);
             _actions = new ActionPanel();
             _actions.ActionRequested += a => _session.Complete(a);
             PanelLayer.Children.Add(_toolbar);
@@ -186,7 +193,7 @@ public partial class OverlayWindow : Window
 
     public void AddObject(VisualObject obj, int? index = null)
     {
-        int idx = index ?? (obj is BlurObject ? _objects.Count(o => o is BlurObject) : _objects.Count);
+        int idx = index ?? (obj is ImageFillObject ? _objects.Count(o => o is ImageFillObject) : _objects.Count);
         idx = Math.Clamp(idx, 0, _objects.Count);
         _objects.Insert(idx, obj);
         ObjectsCanvas.Children.Insert(idx, obj.View);
@@ -254,10 +261,12 @@ public partial class OverlayWindow : Window
             DrawingTool.Pensil => new PencilObject(),
             DrawingTool.Marker => new MarkerObject(),
             DrawingTool.Rectangle => new RectangleObject(),
+            DrawingTool.FilledRectangle => new FilledRectangleObject(),
             DrawingTool.Oval => new OvalObject(),
             DrawingTool.Text => new TextObject(),
             DrawingTool.Number => new NumberObject { Number = _session.NextNumber() },
-            DrawingTool.Blur => new BlurObject(GetBlurred(), new Size(ActualWidth, ActualHeight)),
+            DrawingTool.Blur => new ImageFillObject(tool, GetBlurred(), new Size(ActualWidth, ActualHeight)),
+            DrawingTool.Invert => new ImageFillObject(tool, GetInverted(), new Size(ActualWidth, ActualHeight)),
             _ => throw new ArgumentOutOfRangeException(nameof(tool)),
         };
         obj.Thickness = _session.Thickness;
@@ -274,6 +283,12 @@ public partial class OverlayWindow : Window
             _blurred = Exporter.MakeBlurred(src);
         }
         return _blurred;
+    }
+
+    private BitmapSource GetInverted()
+    {
+        _inverted ??= Exporter.MakeInverted(_background ?? new RenderTargetBitmap(1, 1, 96, 96, PixelFormats.Pbgra32));
+        return _inverted;
     }
 
     public void EndTextEditing()
@@ -567,18 +582,23 @@ public partial class OverlayWindow : Window
             case Key.Y when ctrl: _session.RedoLast(); break;
             case Key.Delete or Key.Back: _session.DeleteSelected(); break;
             case Key.Left or Key.Right or Key.Up or Key.Down: NudgeSelection(key, shift); break;
-            case Key.A when !ctrl: _session.SelectTool(DrawingTool.Arrow, false); break;
-            case Key.L: _session.SelectTool(DrawingTool.Line, false); break;
-            case Key.P when !ctrl: _session.SelectTool(DrawingTool.Pensil, false); break;
-            case Key.M: _session.SelectTool(DrawingTool.Marker, false); break;
-            case Key.R: _session.SelectTool(DrawingTool.Rectangle, false); break;
-            case Key.O: _session.SelectTool(DrawingTool.Oval, false); break;
-            case Key.T: _session.SelectTool(DrawingTool.Text, false); break;
-            case Key.N: _session.SelectTool(DrawingTool.Number, false); break;
-            case Key.B: _session.SelectTool(DrawingTool.Blur, false); break;
-            default: handled = false; break;
+            default: handled = TryRunCommand(key); break;
         }
         e.Handled = handled;
+    }
+
+    /// <summary>Клавиши, назначенные командам редактора в настройках; +/- на цифровом блоке всегда меняют толщину.</summary>
+    private bool TryRunCommand(Key key)
+    {
+        var mods = Keyboard.Modifiers;
+        var pressed = new Hotkey(KeyInterop.VirtualKeyFromKey(key),
+            Ctrl: mods.HasFlag(ModifierKeys.Control), Alt: mods.HasFlag(ModifierKeys.Alt),
+            Shift: mods.HasFlag(ModifierKeys.Shift), Win: mods.HasFlag(ModifierKeys.Windows));
+        if (_session.TryGetCommand(pressed, out var command)) { _session.Execute(command); return true; }
+        if (mods != ModifierKeys.None) return false;
+        if (key == Key.Add) { _session.Execute(EditorCommand.ThicknessUp); return true; }
+        if (key == Key.Subtract) { _session.Execute(EditorCommand.ThicknessDown); return true; }
+        return false;
     }
 
     private void NudgeSelection(Key key, bool resize)
@@ -663,7 +683,7 @@ public partial class OverlayWindow : Window
     {
         DrawingTool.None => Cursors.Cross,
         DrawingTool.Text => Cursors.IBeam,
-        DrawingTool.Blur or DrawingTool.Number => Cursors.Cross,
+        DrawingTool.Blur or DrawingTool.Invert or DrawingTool.Number => Cursors.Cross,
         _ => Cursors.Pen,
     };
 

@@ -106,6 +106,7 @@ public sealed class SettingsStore
         if (!Enum.IsDefined(s.VideoQualityLevel)) s.VideoQualityLevel = VideoQualityLevel.HD;
         if (s.MaxVideoDurationMinutes <= 0) s.MaxVideoDurationMinutes = 180;
         if (s.EditorLineThickness < 2 || s.EditorLineThickness > 60) s.EditorLineThickness = 6;
+        s.OverlayDimPercent = Math.Clamp(s.OverlayDimPercent, 0, 90);
 
         s.ScreenshotsPath = NormalizePath(s.ScreenshotsPath, logger);
         s.VideoSavePath = NormalizePath(s.VideoSavePath, logger);
@@ -121,6 +122,8 @@ public sealed class SettingsStore
         s.HotkeyDesktopScreenshot = Dedupe(s.HotkeyDesktopScreenshot, seen);
         s.HotkeyVideoRecording = Dedupe(s.HotkeyVideoRecording, seen);
         s.HotkeyVideoPause = Dedupe(s.HotkeyVideoPause, seen);
+
+        EditorKeys.Normalize(s, seen);
     }
 
     private static Hotkey Dedupe(Hotkey h, HashSet<Hotkey> seen)
