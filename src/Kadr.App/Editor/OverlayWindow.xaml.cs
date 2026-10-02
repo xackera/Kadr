@@ -45,6 +45,7 @@ public partial class OverlayWindow : Window
     private object? _objectStartState;
     private bool _pendingObjectMove;
     private bool _moved;
+    private bool _hadSelectionBeforeClick;
 
     public MonitorInfo Monitor { get; }
     public double Scale { get; private set; }
@@ -93,14 +94,21 @@ public partial class OverlayWindow : Window
             _toolbar.CustomColorRequested += PickCustomColor;
             _toolbar.UndoRequested += () => _session.UndoLast();
             _toolbar.SetKeyHints(_session.KeyOf);
+            if (!_toolbar.ApplyHidden(_session.IsHidden)) _toolbar.Visibility = Visibility.Collapsed;
             _actions = new ActionPanel();
             _actions.ActionRequested += a => _session.Complete(a);
+            _actions.ApplyHidden(_session.IsHidden);
             PanelLayer.Children.Add(_toolbar);
             PanelLayer.Children.Add(_actions);
         }
 
         HintIcon.Text = session.Mode switch { OverlayMode.Video => "", OverlayMode.Scrolling => "", _ => "" };
-        HintText.Text = session.Mode switch { OverlayMode.Video => "Выделите область для записи", OverlayMode.Scrolling => "Выделите область для прокрутки", _ => "Выделите область" };
+        HintText.Text = session.Mode switch
+        {
+            OverlayMode.Video => "Выделите область для записи или щёлкните для всего экрана",
+            OverlayMode.Scrolling => "Выделите область для прокрутки или щёлкните для всего экрана",
+            _ => "Выделите область или щёлкните, чтобы взять весь экран",
+        };
 
         SourceInitialized += OnSourceInitialized;
         Loaded += (_, _) => { UpdateScale(); Refresh(); };
@@ -425,6 +433,7 @@ public partial class OverlayWindow : Window
         }
 
         // Новое выделение
+        _hadSelectionBeforeClick = _session.HasSelection;
         _session.SelectObject(null);
         _session.SetSelection(this, new Rect(p, new Size(0, 0)));
         _session.SetState(OverlayState.Selecting);
@@ -498,10 +507,11 @@ public partial class OverlayWindow : Window
                 var r = _session.Selection;
                 if (!_moved || r.Width < 1 || r.Height < 1)
                 {
-                    _session.ClearSelection();
-                    break;
+                    // Щелчок без перетаскивания выбирает весь экран; если область уже была — сбрасывает её, как раньше.
+                    if (_hadSelectionBeforeClick) { _session.ClearSelection(); break; }
+                    r = WindowRect;
                 }
-                r = EnsureMinSize(r, _dragStart, p);
+                else r = EnsureMinSize(r, _dragStart, p);
                 _session.SetSelection(this, r);
                 _session.SetState(toolState);
                 if (_session.Mode != OverlayMode.Screenshot) _session.Complete(EditorActionKind.Start);
@@ -556,7 +566,7 @@ public partial class OverlayWindow : Window
         if (IsInsidePanels(e.OriginalSource)) return;
         if (_session.Mode != OverlayMode.Screenshot) return;
         e.Handled = true;
-        _session.SetThickness(_session.Thickness + (e.Delta > 0 ? 2 : -2));
+        _session.ChangeThickness(e.Delta > 0 ? 2 : -2);
     }
 
     // ------------------------------------------------------------------ клавиатура

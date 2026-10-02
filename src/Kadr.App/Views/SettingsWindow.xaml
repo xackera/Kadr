@@ -73,7 +73,18 @@
                 <ItemsControl ItemsSource="{Binding EditorKeyRows}" Grid.IsSharedSizeScope="True" Focusable="False">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Grid Height="46">
+                            <Grid Height="46" IsEnabled="{Binding IsActive}">
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                <Setter Property="Opacity" Value="0.45" />
+                                                <Setter Property="ToolTip" Value="Скрыто в настройках панелей редактора (вкладка «Скриншоты»)" />
+                                                <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" MinWidth="240" SharedSizeGroup="EditorKeyTitle" />
                                     <ColumnDefinition Width="Auto" />
@@ -88,6 +99,8 @@
                         Command="{Binding ResetEditorKeysCommand}" />
 
                 <TextBlock Text="Встроенные клавиши редактора" Style="{StaticResource SubHeader}" />
+                <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,8"
+                           Text="Копирование, сохранение, печать и отмена не работают и по клавишам, если их кнопки скрыты на вкладке «Скриншоты»." />
                 <ItemsControl ItemsSource="{Binding FixedEditorKeys}" Grid.IsSharedSizeScope="True" Focusable="False">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -159,7 +172,40 @@
                     <TextBlock Text="{Binding OverlayDimPercent, StringFormat={}{0} %}" Style="{StaticResource Label}" Margin="12,0,0,0" MinWidth="40" />
                 </StackPanel>
 
+                <TextBlock Text="Панели редактора" Style="{StaticResource SubHeader}" />
+                <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,8"
+                           Text="Снимите галочку, чтобы убрать кнопку с панели. Скрытая команда отключается полностью — её клавиша тоже не работает. «Готово» и «Закрыть» есть всегда." />
+                <TextBlock Text="Панель инструментов" Style="{StaticResource Label}" FontWeight="SemiBold" Margin="0,4,0,6" />
+                <ItemsControl ItemsSource="{Binding ToolbarPanelItems}" Focusable="False">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox Content="{Binding Title}" IsChecked="{Binding IsVisible}" Width="210" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="Панель действий" Style="{StaticResource Label}" FontWeight="SemiBold" Margin="0,8,0,6" />
+                <ItemsControl ItemsSource="{Binding ActionPanelItems}" Focusable="False">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox Content="{Binding Title}" IsChecked="{Binding IsVisible}" Width="210" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button Content="Показать все кнопки" Style="{StaticResource FlatButton}" HorizontalAlignment="Left" Margin="0,6,0,0"
+                        Command="{Binding ShowAllPanelItemsCommand}" />
+
                 <TextBlock Text="Прочее" Style="{StaticResource SubHeader}" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="Скриншот активного монитора снимает" Style="{StaticResource Label}" />
+                    <ComboBox ItemsSource="{Binding ActiveMonitorSources}" SelectedValuePath="Key" DisplayMemberPath="Value"
+                              SelectedValue="{Binding ActiveMonitorSource}" MinWidth="240" />
+                </StackPanel>
                 <CheckBox Content="Показывать курсор мыши" IsChecked="{Binding CaptureCursor}" />
                 <CheckBox Content="Запоминать выделенную область" IsChecked="{Binding UsePreviouslySelectedRegion}" />
                 <CheckBox Content="Проигрывать звук" IsChecked="{Binding PlaySound}" />

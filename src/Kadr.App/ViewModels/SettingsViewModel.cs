@@ -33,7 +33,33 @@ public sealed class EditorKeyRow : ObservableObject
     public string Title { get; }
     public Hotkey Hotkey { get => _owner.GetEditorKey(Command); set => _owner.SetEditorKey(this, value); }
 
-    public void Refresh() => OnPropertyChanged(nameof(Hotkey));
+    /// <summary>Команда доступна: её элемент не скрыт в настройках панелей.</summary>
+    public bool IsActive => _owner.IsCommandActive(Command);
+
+    public void Refresh()
+    {
+        OnPropertyChanged(nameof(Hotkey));
+        OnPropertyChanged(nameof(IsActive));
+    }
+}
+
+/// <summary>Галочка «показывать» для элемента панели редактора.</summary>
+public sealed class PanelItemRow : ObservableObject
+{
+    private readonly SettingsViewModel _owner;
+
+    public PanelItemRow(SettingsViewModel owner, EditorPanelItem item)
+    {
+        _owner = owner;
+        Item = item;
+        Title = EditorCommandInfo.Title(item);
+    }
+
+    public EditorPanelItem Item { get; }
+    public string Title { get; }
+    public bool IsVisible { get => _owner.IsPanelItemVisible(Item); set => _owner.SetPanelItemVisible(this, value); }
+
+    public void Refresh() => OnPropertyChanged(nameof(IsVisible));
 }
 
 /// <summary>Модель окна настроек: каждое свойство читает текущие настройки и сохраняет их сразу при изменении.</summary>
@@ -51,6 +77,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         _notify = notify;
         _logger = logger;
         EditorKeyRows = EditorKeys.All.Select(c => new EditorKeyRow(this, c)).ToList();
+        ToolbarPanelItems = EditorPanel.ToolbarItems.Select(i => new PanelItemRow(this, i)).ToList();
+        ActionPanelItems = EditorPanel.ActionItems.Select(i => new PanelItemRow(this, i)).ToList();
     }
 
     private AppSettings S => _store.Current;
@@ -69,6 +97,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         new Option<TrayClickAction>(TrayClickAction.MakeRegionScreenshot, "Скриншот области экрана"),
         new Option<TrayClickAction>(TrayClickAction.RecordVideo, "Запись видео"),
         new Option<TrayClickAction>(TrayClickAction.MakeScrollingCapture, "Скриншот с прокруткой"),
+    };
+
+    public IReadOnlyList<Option<ActiveMonitorSource>> ActiveMonitorSources { get; } = new[]
+    {
+        new Option<ActiveMonitorSource>(ActiveMonitorSource.ActiveWindow, "Монитор с активным окном"),
+        new Option<ActiveMonitorSource>(ActiveMonitorSource.Cursor, "Монитор под курсором мыши"),
     };
 
     public IReadOnlyList<Option<ScreenshotFileType>> FileTypes { get; } = new[]
@@ -219,6 +253,34 @@ public sealed partial class SettingsViewModel : ObservableObject
         row.Refresh();
     }
 
+    internal bool IsCommandActive(EditorCommand command)
+        => EditorPanel.ItemOf(command) is not { } item || !EditorPanel.IsHidden(S, item);
+
+    // ---- Состав панелей редактора
+
+    public IReadOnlyList<PanelItemRow> ToolbarPanelItems { get; }
+    public IReadOnlyList<PanelItemRow> ActionPanelItems { get; }
+
+    internal bool IsPanelItemVisible(EditorPanelItem item) => !EditorPanel.IsHidden(S, item);
+
+    internal void SetPanelItemVisible(PanelItemRow row, bool visible)
+    {
+        // Список заменяется целиком, как и словарь клавиш: старый снимок настроек не должен меняться.
+        var hidden = S.EditorHiddenItems.Where(n => n != row.Item.ToString()).ToList();
+        if (!visible) hidden.Add(row.Item.ToString());
+        _store.Update(s => s.EditorHiddenItems = hidden);
+        row.Refresh();
+        foreach (var keyRow in EditorKeyRows) keyRow.Refresh();
+    }
+
+    [RelayCommand]
+    private void ShowAllPanelItems()
+    {
+        _store.Update(s => s.EditorHiddenItems = new List<string>());
+        foreach (var row in ToolbarPanelItems.Concat(ActionPanelItems)) row.Refresh();
+        foreach (var keyRow in EditorKeyRows) keyRow.Refresh();
+    }
+
     [RelayCommand]
     private void ResetEditorKeys()
     {
@@ -276,6 +338,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     public bool IsJpeg => S.ScreenshotFileType == ScreenshotFileType.Jpeg;
     public int JpegQuality { get => S.JpegQuality; set => Set(value, (s, v) => s.JpegQuality = v); }
     public bool CaptureCursor { get => S.CaptureCursor; set => Set(value, (s, v) => s.CaptureCursor = v); }
+    public ActiveMonitorSource ActiveMonitorSource { get => S.ActiveMonitorSource; set => Set(value, (s, v) => s.ActiveMonitorSource = v); }
     public bool UsePreviouslySelectedRegion { get => S.UsePreviouslySelectedRegion; set => Set(value, (s, v) => s.UsePreviouslySelectedRegion = v); }
     public bool PlaySound { get => S.PlaySound; set => Set(value, (s, v) => s.PlaySound = v); }
 

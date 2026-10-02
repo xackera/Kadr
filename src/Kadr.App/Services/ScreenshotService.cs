@@ -39,7 +39,7 @@ public sealed class ScreenshotService
         {
             var hwnd = ForegroundWindow.Handle;
             var title = ForegroundWindow.Title(hwnd);
-            var rect = ResolveRectangle(mode, hwnd);
+            var rect = ResolveRectangle(mode, hwnd, _store.Current.ActiveMonitorSource);
             if (rect is null || rect.Value.Width <= 0 || rect.Value.Height <= 0)
             {
                 _notify.Error("Не удалось определить область захвата.");
@@ -65,7 +65,7 @@ public sealed class ScreenshotService
         }
     }
 
-    private static Rectangle? ResolveRectangle(ScreenshotMode mode, nint hwnd)
+    private static Rectangle? ResolveRectangle(ScreenshotMode mode, nint hwnd, ActiveMonitorSource monitorSource)
     {
         switch (mode)
         {
@@ -78,7 +78,10 @@ public sealed class ScreenshotService
                 return Rectangle.Intersect(bounds.Value, clip);
             }
             case ScreenshotMode.ActiveMonitor:
-                return (Monitors.FromWindow(hwnd) ?? Monitors.Primary())?.Bounds;
+                var monitor = monitorSource == ActiveMonitorSource.Cursor
+                    ? Monitors.FromPoint(NativeMethods.CursorPosition())
+                    : Monitors.FromWindow(hwnd);
+                return (monitor ?? Monitors.Primary())?.Bounds;
             default:
                 return Monitors.VirtualScreen();
         }

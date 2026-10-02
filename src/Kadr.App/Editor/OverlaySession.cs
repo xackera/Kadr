@@ -51,6 +51,9 @@ public sealed class OverlaySession
     private readonly Dictionary<EditorCommand, Hotkey> _keys;
     private readonly Dictionary<Hotkey, EditorCommand> _commandsByKey;
 
+    /// <summary>Скрытые в настройках элементы панелей: они не показываются и не работают, в том числе по клавишам.</summary>
+    private readonly HashSet<EditorPanelItem> _hidden;
+
     /// <summary>Любое изменение состояния: окна перерисовывают рамку, панели, курсор.</summary>
     public event Action? Changed;
 
@@ -61,6 +64,7 @@ public sealed class OverlaySession
         EditorEnabled = editorEnabled;
         _logger = logger;
         Shadows = settings.DrawObjectShadows;
+        _hidden = Enum.GetValues<EditorPanelItem>().Where(i => EditorPanel.IsHidden(settings, i)).ToHashSet();
         _keys = EditorKeys.All.ToDictionary(c => c, c => EditorKeys.Get(settings, c));
         _commandsByKey = _keys.Where(k => !k.Value.IsEmpty).ToDictionary(k => k.Value, k => k.Key);
         Thickness = Math.Clamp(settings.EditorLineThickness, VisualObject.MinThickness, VisualObject.MaxThickness);
@@ -73,6 +77,7 @@ public sealed class OverlaySession
             EditorDefaultElement.LastUsed => settings.EditorSelectedTool,
             _ => DrawingTool.None,
         };
+        if (IsToolHidden(Tool)) Tool = DrawingTool.None;
     }
 
     public static Task<OverlayResult?> RunAsync(OverlayMode mode, AppSettings settings, bool editorEnabled, ILogger logger)
@@ -162,8 +167,16 @@ public sealed class OverlaySession
         NotifyChanged();
     }
 
+    /// <summary>Толщина с колеса мыши или клавиш; не работает, если толщина скрыта в настройках панели.</summary>
+    public void ChangeThickness(double delta)
+    {
+        if (Mode != OverlayMode.Screenshot || IsHidden(EditorPanelItem.Thickness)) return;
+        SetThickness(Thickness + delta);
+    }
+
     public void SelectTool(DrawingTool tool, bool fromClick)
     {
+        if (IsToolHidden(tool)) return;
         if (!(State is OverlayState.Selected or OverlayState.ToolSelected or OverlayState.EditingText)) return;
         if (fromClick && Tool == tool) tool = DrawingTool.None;
         EndTextEditing();
@@ -171,6 +184,10 @@ public sealed class OverlaySession
         SelectedObject = null;
         SetState(tool == DrawingTool.None ? OverlayState.Selected : OverlayState.ToolSelected);
     }
+
+    public bool IsHidden(EditorPanelItem item) => _hidden.Contains(item);
+
+    public bool IsToolHidden(DrawingTool tool) => EditorPanel.ItemOf(tool) is { } item && _hidden.Contains(item);
 
     public Hotkey KeyOf(EditorCommand command) => _keys[command];
 
@@ -180,11 +197,20 @@ public sealed class OverlaySession
     {
         switch (command)
         {
-            case EditorCommand.ThicknessUp: if (Mode == OverlayMode.Screenshot) SetThickness(Thickness + 2); break;
-            case EditorCommand.ThicknessDown: if (Mode == OverlayMode.Screenshot) SetThickness(Thickness - 2); break;
+            case EditorCommand.ThicknessUp: ChangeThickness(+2); break;
+            case EditorCommand.ThicknessDown: ChangeThickness(-2); break;
             default: if (EditorKeys.ToolOf(command) is { } tool) SelectTool(tool, false); break;
         }
     }
+
+    private static EditorPanelItem? ActionItem(EditorActionKind action) => action switch
+    {
+        EditorActionKind.DoOcr => EditorPanelItem.Ocr,
+        EditorActionKind.CopyToClipboard => EditorPanelItem.Copy,
+        EditorActionKind.Print => EditorPanelItem.Print,
+        EditorActionKind.SaveToFile => EditorPanelItem.Save,
+        _ => null,
+    };
 
     public void SelectObject(VisualObject? obj)
     {
@@ -245,14 +271,15 @@ public sealed class OverlaySession
         NotifyChanged();
     }
 
-    public void UndoLast() { EndTextEditing(); SelectedObject = null; Undo.Undo(); NotifyChanged(); }
-    public void RedoLast() { EndTextEditing(); SelectedObject = null; Undo.Redo(); NotifyChanged(); }
+    public void UndoLast() { if (IsHidden(EditorPanelItem.Undo)) return; EndTextEditing(); SelectedObject = null; Undo.Undo(); NotifyChanged(); }
+    public void RedoLast() { if (IsHidden(EditorPanelItem.Undo)) return; EndTextEditing(); SelectedObject = null; Undo.Redo(); NotifyChanged(); }
 
     /// <summary>Действие пользователя с панели или клавиатуры.</summary>
     public void Complete(EditorActionKind action)
     {
         if (_finished) return;
         if (action == EditorActionKind.Close) { Finish(null); return; }
+        if (ActionItem(action) is { } item && IsHidden(item)) return;
         if (Owner is null || !HasSelection) return;
 
         EndTextEditing();

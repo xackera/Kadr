@@ -124,6 +124,7 @@ public sealed class SettingsStore
         s.HotkeyVideoPause = Dedupe(s.HotkeyVideoPause, seen);
 
         EditorKeys.Normalize(s, seen);
+        EditorPanel.Normalize(s);
     }
 
     private static Hotkey Dedupe(Hotkey h, HashSet<Hotkey> seen)

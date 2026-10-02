@@ -32,6 +32,28 @@ public partial class EditorToolbar : UserControl
         };
     }
 
+    /// <summary>Скрыть кнопки элементов, отключённых в настройках. Возвращает false, если на панели не осталось ни одной кнопки.</summary>
+    public bool ApplyHidden(Func<EditorPanelItem, bool> isHidden)
+    {
+        bool anyTool = false;
+        foreach (var (tool, button) in _buttons)
+        {
+            bool visible = EditorPanel.ItemOf(tool) is not { } item || !isHidden(item);
+            button.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            anyTool |= visible;
+        }
+        bool anyControl = false;
+        foreach (var (item, button) in new (EditorPanelItem, Button)[]
+                 { (EditorPanelItem.Thickness, BtnThickness), (EditorPanelItem.Color, BtnColor), (EditorPanelItem.Undo, BtnUndo) })
+        {
+            bool visible = !isHidden(item);
+            button.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            anyControl |= visible;
+        }
+        ToolsSeparator.Visibility = anyTool && anyControl ? Visibility.Visible : Visibility.Collapsed;
+        return anyTool || anyControl;
+    }
+
     /// <summary>Подсказки кнопок с клавишами, назначенными в настройках.</summary>
     public void SetKeyHints(Func<EditorCommand, Hotkey> keyOf)
     {

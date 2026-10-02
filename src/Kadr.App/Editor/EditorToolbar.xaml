@@ -111,7 +111,7 @@
                           Data="M10,3.5 A6.5,6.5 0 0 1 10,16.5 Z" />
                 </Grid>
             </ToggleButton>
-            <Rectangle Width="1" Margin="4,4" Fill="#E0E0E0" />
+            <Rectangle x:Name="ToolsSeparator" Width="1" Margin="4,4" Fill="#E0E0E0" />
             <Button x:Name="BtnThickness" Style="{StaticResource IconButton}" ToolTip="Толщина линии" Click="Thickness_Click">
                 <Path Style="{StaticResource Icon}" Data="M4,5 H16 M4,10 H16 M4,15 H16" StrokeThickness="1" />
             </Button>

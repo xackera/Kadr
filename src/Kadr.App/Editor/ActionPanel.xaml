@@ -34,11 +34,11 @@
             <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.3" />
         </Border.Effect>
         <StackPanel>
-            <Button Style="{StaticResource ActionButton}" Content="&#xE8D2;" ToolTip="Распознать текст" Click="Ocr_Click" />
-            <Rectangle Height="1" Margin="4,4" Fill="#E0E0E0" />
-            <Button Style="{StaticResource ActionButton}" Content="&#xE8C8;" ToolTip="Копировать в буфер обмена (Ctrl+C, Ctrl+Insert)" Click="Copy_Click" />
-            <Button Style="{StaticResource ActionButton}" Content="&#xE749;" ToolTip="Распечатать на принтере (Ctrl+P)" Click="Print_Click" />
-            <Button Style="{StaticResource ActionButton}" Content="&#xE74E;" ToolTip="Сохранить на диск (Ctrl+S)" Click="Save_Click" />
+            <Button x:Name="BtnOcr" Style="{StaticResource ActionButton}" Content="&#xE8D2;" ToolTip="Распознать текст" Click="Ocr_Click" />
+            <Rectangle x:Name="OcrSeparator" Height="1" Margin="4,4" Fill="#E0E0E0" />
+            <Button x:Name="BtnCopy" Style="{StaticResource ActionButton}" Content="&#xE8C8;" ToolTip="Копировать в буфер обмена (Ctrl+C, Ctrl+Insert)" Click="Copy_Click" />
+            <Button x:Name="BtnPrint" Style="{StaticResource ActionButton}" Content="&#xE749;" ToolTip="Распечатать на принтере (Ctrl+P)" Click="Print_Click" />
+            <Button x:Name="BtnSave" Style="{StaticResource ActionButton}" Content="&#xE74E;" ToolTip="Сохранить на диск (Ctrl+S)" Click="Save_Click" />
             <Button x:Name="BtnDefault" Style="{StaticResource ActionButton}" Content="&#xE73E;" ToolTip="Готово: сохранить по настройкам (Enter)" Click="Default_Click" />
             <Button Style="{StaticResource ActionButton}" Content="&#xE8BB;" ToolTip="Закрыть (Esc)" Click="Close_Click" />
         </StackPanel>

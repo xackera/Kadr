@@ -23,6 +23,18 @@ public static class EditorCommandInfo
         _ => command.ToString(),
     };
 
+    public static string Title(EditorPanelItem item) => item switch
+    {
+        EditorPanelItem.Thickness => "Толщина линии",
+        EditorPanelItem.Color => "Цвет",
+        EditorPanelItem.Undo => "Отмена и повтор",
+        EditorPanelItem.Ocr => "Распознать текст",
+        EditorPanelItem.Copy => "Копировать",
+        EditorPanelItem.Print => "Печать",
+        EditorPanelItem.Save => "Сохранить",
+        _ => Enum.TryParse<EditorCommand>(item.ToString(), out var command) ? Title(command) : item.ToString(),
+    };
+
     /// <summary>Встроенные клавиши редактора: показываются в настройках для справки, переназначить их нельзя.</summary>
     public static IReadOnlyList<(string Action, string Keys)> FixedKeys { get; } = new[]
     {

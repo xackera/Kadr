@@ -7,6 +7,8 @@ namespace Kadr.Common.Settings;
 public enum StorageType { Clipboard, File, FileAndClipboard }
 public enum ScreenshotFileType { Png, Jpeg }
 public enum TrayClickAction { ShowPanel, MakeRegionScreenshot, RecordVideo, MakeScrollingCapture }
+/// <summary>Какой монитор снимает «Скриншот активного монитора».</summary>
+public enum ActiveMonitorSource { ActiveWindow, Cursor }
 public enum EditorDefaultElement { None, Arrow, LastUsed }
 public enum DrawingTool { None, Arrow, Line, Pensil, Marker, Rectangle, Oval, Text, Number, Blur, FilledRectangle, Invert }
 public enum VideoQualityLevel { SD = 0, HD = 1, FullHD = 2, UHD4K = 3, FullHD60fps = 4 }
@@ -46,6 +48,7 @@ public sealed class AppSettings
     [JsonPropertyName("screenshot_file_type")] public ScreenshotFileType ScreenshotFileType { get; set; } = ScreenshotFileType.Png;
     [JsonPropertyName("jpeg_quality")] public int JpegQuality { get; set; } = 80;
     [JsonPropertyName("capture_cursor")] public bool CaptureCursor { get; set; } = false;
+    [JsonPropertyName("active_monitor_source")] public ActiveMonitorSource ActiveMonitorSource { get; set; } = ActiveMonitorSource.ActiveWindow;
     [JsonPropertyName("use_previously_selected_region")] public bool UsePreviouslySelectedRegion { get; set; } = false;
     [JsonPropertyName("screenshot_previously_selected_region")] public string PreviouslySelectedRegion { get; set; } = "";
     [JsonPropertyName("play_sound")] public bool PlaySound { get; set; } = true;
@@ -64,6 +67,8 @@ public sealed class AppSettings
     [JsonPropertyName("overlay_dim_percent")] public int OverlayDimPercent { get; set; } = 60;
     /// <summary>Свои клавиши команд редактора (имя команды → сочетание). Отсутствующие команды — по умолчанию, см. EditorKeys.</summary>
     [JsonPropertyName("editor_hotkeys")] public Dictionary<string, Hotkey> EditorHotkeys { get; set; } = new();
+    /// <summary>Скрытые элементы панелей редактора (имена EditorPanelItem). Скрытый элемент не работает и по клавише.</summary>
+    [JsonPropertyName("editor_hidden_items")] public List<string> EditorHiddenItems { get; set; } = new();
     [JsonPropertyName("open_file_after_save")] public bool OpenFileAfterSave { get; set; } = false;
 
     // ---- Видео

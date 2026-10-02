@@ -2,7 +2,7 @@
 # Требуется .NET SDK и WiX:  dotnet tool install --global wix
 # Архитектура: x64 (по умолчанию) или arm64; ARM64-сборка кросс-компилируется на обычном x64-компьютере.
 param(
-    [string]$Version = "1.1.0",
+    [string]$Version = "1.2.0",
     [ValidateSet("x64", "arm64")]
     [string]$Arch = "x64",
     [switch]$SkipPublish
