@@ -41,6 +41,7 @@
 
   <ItemGroup>
     <Resource Include="Assets\*.ico" />
+    <Resource Include="Assets\*.png" />
     <Resource Include="Assets\*.wav" />
   </ItemGroup>
 

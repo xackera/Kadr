@@ -294,7 +294,8 @@
         <TabItem Header="О программе" Style="{StaticResource NavTabItem}">
             <StackPanel MaxWidth="640" HorizontalAlignment="Left">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                    <Image Source="pack://application:,,,/Assets/kadr-app.ico" Width="48" Height="48" Margin="0,0,16,0" />
+                    <Image Source="pack://application:,,,/Assets/kadr-logo.png" Width="48" Height="48" Margin="0,0,16,0"
+                           RenderOptions.BitmapScalingMode="HighQuality" />
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="{Binding Version}" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
                         <TextBlock Text="Скриншоты и запись экрана. Бесплатно, для личного использования." Foreground="{StaticResource TextMutedBrush}" />
