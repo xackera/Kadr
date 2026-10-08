@@ -38,7 +38,8 @@ Write-Host "Сборка $msi ..."
     -o $msi
 if ($LASTEXITCODE -ne 0) { throw "Сборка установщика не удалась" }
 
-# Контрольная сумма для автообновления: программа скачивает её вместе с MSI и сверяет.
+# Контрольная сумма рядом с MSI. Прикладывать к релизу не обязательно: GitHub сам отдаёт SHA-256 файлов релиза,
+# программа берёт её оттуда, а .sha256 — запасной вариант и для ручной проверки.
 $hash = (Get-FileHash $msi -Algorithm SHA256).Hash.ToLowerInvariant()
 [IO.File]::WriteAllText("$msi.sha256", $hash, [Text.Encoding]::ASCII)
 

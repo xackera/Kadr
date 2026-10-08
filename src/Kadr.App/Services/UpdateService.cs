@@ -15,7 +15,8 @@ using Microsoft.Win32;
 
 namespace Kadr.App.Services;
 
-public sealed record UpdateAsset(string Name, string Url, long Size);
+/// <param name="Sha256">SHA-256 файла, которую GitHub отдаёт в поле digest; null — если её нет.</param>
+public sealed record UpdateAsset(string Name, string Url, long Size, string? Sha256 = null);
 
 public sealed record UpdateInfo(Version Version, DateTimeOffset? PublishedAt, string Notes, string PageUrl, UpdateAsset? Msi, UpdateAsset? Checksum);
 
@@ -159,7 +160,10 @@ public sealed class UpdateService : IDisposable
                 var name = a.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
                 var url = a.TryGetProperty("browser_download_url", out var u) ? u.GetString() ?? "" : "";
                 var size = a.TryGetProperty("size", out var s) && s.TryGetInt64(out var len) ? len : -1;
-                assets.Add(new UpdateAsset(name, url, size));
+                var digest = a.TryGetProperty("digest", out var d) && d.ValueKind == JsonValueKind.String ? d.GetString() : null;
+                var sha256 = digest is not null && digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)
+                    ? digest[7..].ToLowerInvariant() : null;
+                assets.Add(new UpdateAsset(name, url, size, sha256));
             }
         }
         var msiName = $"Kadr-{version}-{ArchSuffix}.msi";
@@ -190,11 +194,16 @@ public sealed class UpdateService : IDisposable
 
     // ---- Загрузка
 
-    /// <summary>Скачать установщик и проверить размер и SHA-256. Возвращает путь к проверенному MSI.</summary>
+    /// <summary>
+    /// Скачать установщик и проверить размер и SHA-256. Сумму отдаёт сам GitHub (поле digest у файла релиза);
+    /// файл .sha256 рядом с установщиком — запасной вариант. Возвращает путь к проверенному MSI.
+    /// </summary>
     public async Task<string> DownloadAsync(UpdateInfo info, IProgress<(long Done, long Total)> progress, CancellationToken ct)
     {
-        if (info.Msi is null || info.Checksum is null)
-            throw new InvalidOperationException($"В релизе нет установщика или контрольной суммы для {ArchSuffix}.");
+        if (info.Msi is null)
+            throw new InvalidOperationException($"В релизе нет установщика для {ArchSuffix}.");
+        if (info.Msi.Sha256 is null && info.Checksum is null)
+            throw new InvalidOperationException("Для установщика не указана контрольная сумма, проверить файл нельзя.");
 
         CleanDirectory();
         Directory.CreateDirectory(UpdateDirectory);
@@ -202,8 +211,9 @@ public sealed class UpdateService : IDisposable
         var sw = Stopwatch.StartNew();
         await DownloadFileAsync(info.Msi, msiPath, progress, ct);
 
-        var expected = (await ReadTextAsync(info.Checksum.Url, ct))
-            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.ToLowerInvariant() ?? "";
+        var expected = info.Msi.Sha256
+                       ?? (await ReadTextAsync(info.Checksum!.Url, ct))
+                           .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.ToLowerInvariant() ?? "";
         var size = new FileInfo(msiPath).Length;
         if (info.Msi.Size > 0 && size != info.Msi.Size)
             throw new InvalidDataException($"Размер файла {size} байт не совпадает с ожидаемым {info.Msi.Size}.");
@@ -215,7 +225,8 @@ public sealed class UpdateService : IDisposable
             _logger.LogWarning("SHA-256 не совпадает: ожидалось {Expected}, получено {Actual}", expected, actual);
             throw new InvalidDataException("Контрольная сумма не совпадает: файл повреждён при загрузке или подменён.");
         }
-        _logger.LogInformation("Установщик {File} загружен и проверен: {Size} байт за {Ms} мс", info.Msi.Name, size, sw.ElapsedMilliseconds);
+        _logger.LogInformation("Установщик {File} загружен и проверен ({Source}): {Size} байт за {Ms} мс",
+            info.Msi.Name, info.Msi.Sha256 is not null ? "сумма от GitHub" : "сумма из .sha256", size, sw.ElapsedMilliseconds);
         return msiPath;
     }
 
