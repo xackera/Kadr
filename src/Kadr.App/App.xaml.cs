@@ -54,6 +54,7 @@ public partial class App : Application
                 services.AddSingleton<ScrollingCaptureService>();
                 services.AddSingleton<MouseHotkeyService>();
                 services.AddSingleton<AppCommands>();
+                services.AddSingleton<UpdateService>();
                 services.AddTransient<SettingsViewModel>();
                 services.AddHostedService<MainPipeServer>();
             })
@@ -79,6 +80,9 @@ public partial class App : Application
                 () => _host.Services.GetRequiredService<AppCommands>().ShowSettings());
             _host.Services.GetRequiredService<HotkeyService>().Initialize();
             _host.Services.GetRequiredService<MouseHotkeyService>().Initialize();
+            var updates = _host.Services.GetRequiredService<UpdateService>();
+            updates.Start();
+            if (args.UpdateResult is { } updateResult) updates.ReportInstallResult(updateResult);
 
             var commands = _host.Services.GetRequiredService<AppCommands>();
             if (args.Command is not null) commands.Execute(args.Command);
@@ -108,6 +112,7 @@ public partial class App : Application
                 _host.Services.GetService<HotkeyService>()?.Dispose();
                 _host.Services.GetService<MouseHotkeyService>()?.Dispose();
                 _host.Services.GetService<TrayService>()?.Dispose();
+                _host.Services.GetService<UpdateService>()?.Dispose();
                 _host.Services.GetService<VideoModuleClient>()?.Dispose();
                 _host.StopAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
                 _host.Dispose();

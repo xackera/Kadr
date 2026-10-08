@@ -5,15 +5,25 @@ namespace Kadr.App.Startup;
 /// <summary>
 /// Аргументы: -r скриншот области, -v запись видео, -c скриншот с прокруткой, -u закрыть работающий экземпляр,
 /// -s тихий запуск (без окна настроек), --portable настройки рядом с exe. Без аргументов открывается окно настроек.
+/// --update-result N — служебный: перезапуск после установки обновления с кодом msiexec.
 /// </summary>
-public sealed record CommandLineArgs(string? Command, bool Silent, bool Portable)
+public sealed record CommandLineArgs(string? Command, bool Silent, bool Portable, int? UpdateResult = null)
 {
     public static CommandLineArgs Parse(string[] args)
     {
         string? command = null;
         bool silent = false, portable = false;
-        foreach (var a in args)
+        int? updateResult = null;
+        for (int i = 0; i < args.Length; i++)
         {
+            var a = args[i];
+            if (a.Equals("--update-result", StringComparison.OrdinalIgnoreCase))
+            {
+                updateResult = i + 1 < args.Length && int.TryParse(args[i + 1], out var code) ? code : -1;
+                silent = true;
+                i++;
+                continue;
+            }
             switch (a.ToLowerInvariant())
             {
                 case "-r": case "--region": command = Ipc.Commands.ScreenshotRegion; break;
@@ -27,7 +37,7 @@ public sealed record CommandLineArgs(string? Command, bool Silent, bool Portable
                 case "--portable": portable = true; break;
             }
         }
-        return new CommandLineArgs(command, silent, portable);
+        return new CommandLineArgs(command, silent, portable, updateResult);
     }
 
     /// <summary>Команда для передачи уже работающему экземпляру.</summary>

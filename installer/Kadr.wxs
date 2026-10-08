@@ -128,6 +128,8 @@
                   Target="[INSTALLFOLDER]Kadr.exe"
                   WorkingDirectory="INSTALLFOLDER" />
         <RegistryValue Root="HKLM" Key="Software\$(Manufacturer)\$(ProductName)" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+        <!-- По этой папке программа отличает установленную копию (её можно обновить установщиком) от портативной -->
+        <RegistryValue Root="HKLM" Key="Software\$(Manufacturer)\$(ProductName)" Name="InstallFolder" Type="string" Value="[INSTALLFOLDER]" />
       </Component>
 
       <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="2f8e6c14-9a37-4d51-b0c2-5e93a7d61b48"

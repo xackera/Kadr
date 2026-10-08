@@ -18,6 +18,8 @@
   системный звук и микрофон, пресеты качества до 4K, подсветка курсора и кликов, веб-камера в кадре, контроль места на диске,
   панель управления, отдельный процесс видеомодуля.
 - **Трей**: меню, панель быстрого выбора, тихий режим, автозапуск, вызов двумя кнопками мыши.
+- **Обновление** из GitHub Releases: проверка вручную или раз в день (по желанию), загрузка с проверкой SHA-256,
+  установка и перезапуск одной кнопкой.
 - **Настройки**: `%LocalAppData%\Kadr\settings.json`, шаблоны имён файлов, папки, формат PNG/JPEG, устройства звука и камера.
 
 ## Системные требования
@@ -74,20 +76,22 @@ dotnet publish D:\Work\Kadr\code\src\Kadr.App\Kadr.App.csproj -c Release -r win-
 `wix extension add -g WixToolset.UI.wixext/5.0.2` и `wix extension add -g WixToolset.Util.wixext/5.0.2`.
 
 ```bash
-powershell -ExecutionPolicy Bypass -File installer\build.ps1 -Version 1.2.0
+powershell -ExecutionPolicy Bypass -File installer\build.ps1 -Version 1.3.0
 ```
 
-Результат: `dist\Kadr-1.2.0-x64.msi`, около 58 МБ. Установщик ставит программу в `Program Files\Kadr`,
+Результат: `dist\Kadr-1.3.0-x64.msi`, около 58 МБ. Установщик ставит программу в `Program Files\Kadr`,
 создаёт ярлык в меню «Пуск», запись в «Программах и компонентах», закрывает работающую программу перед
 обновлением и проверяет версию Windows. Настройки в `%LocalAppData%\Kadr` при удалении сохраняются.
+Рядом с каждым MSI создаётся `<имя>.msi.sha256` — его нужно приложить к релизу вместе с установщиком: по нему
+программа проверяет скачанное обновление.
 
 Сборка под ARM64 (Windows на Snapdragon) делается на обычном x64-компьютере, ничего дополнительно ставить не нужно:
 
 ```bash
-powershell -ExecutionPolicy Bypass -File installer\build.ps1 -Version 1.2.0 -Arch arm64
+powershell -ExecutionPolicy Bypass -File installer\build.ps1 -Version 1.3.0 -Arch arm64
 ```
 
-Результат: `dist\Kadr-1.2.0-arm64.msi`. Публикация идёт в `publish-arm64`, x64-сборка в `publish` не затрагивается.
+Результат: `dist\Kadr-1.3.0-arm64.msi`. Публикация идёт в `publish-arm64`, x64-сборка в `publish` не затрагивается.
 x64-версия на Windows 11 ARM тоже работает — через эмуляцию; нативная сборка быстрее и экономнее к батарее.
 
 ## Тестовые скрипты (`tests/`)

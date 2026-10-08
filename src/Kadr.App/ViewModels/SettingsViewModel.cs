@@ -70,8 +70,11 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly NotificationService _notify;
     private readonly ILogger<SettingsViewModel> _logger;
 
-    public SettingsViewModel(SettingsStore store, AppPaths paths, NotificationService notify, ILogger<SettingsViewModel> logger)
+    private readonly UpdateService _updates;
+
+    public SettingsViewModel(SettingsStore store, AppPaths paths, NotificationService notify, UpdateService updates, ILogger<SettingsViewModel> logger)
     {
+        _updates = updates;
         _store = store;
         _paths = paths;
         _notify = notify;
@@ -152,6 +155,32 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public bool SilentMode { get => S.SilentMode; set => Set(value, (s, v) => s.SilentMode = v); }
     public TrayClickAction TrayLeftClickAction { get => S.TrayLeftClickAction; set => Set(value, (s, v) => s.TrayLeftClickAction = v); }
+
+    // ---- Обновления
+
+    public bool CheckForUpdates { get => S.CheckForUpdates; set => Set(value, (s, v) => s.CheckForUpdates = v); }
+
+    public string LastUpdateCheckText => S.UpdateLastCheck is { } t
+        ? $"Последняя проверка: {t.ToLocalTime():dd.MM.yyyy HH:mm}. Установлена версия {UpdateService.CurrentVersion}."
+        : $"Обновления ещё не проверялись. Установлена версия {UpdateService.CurrentVersion}.";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanCheckUpdates))]
+    private bool _isCheckingUpdates;
+
+    public bool CanCheckUpdates => !IsCheckingUpdates;
+
+    [RelayCommand]
+    private async Task CheckUpdatesNow()
+    {
+        IsCheckingUpdates = true;
+        try { await _updates.CheckAsync(manual: true); }
+        finally
+        {
+            IsCheckingUpdates = false;
+            OnPropertyChanged(nameof(LastUpdateCheckText));
+        }
+    }
 
     // ---- Горячие клавиши
 

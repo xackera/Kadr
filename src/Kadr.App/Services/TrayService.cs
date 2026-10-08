@@ -19,7 +19,7 @@ public sealed class TrayService : IDisposable
     private readonly ILogger<TrayService> _logger;
 
     private TaskbarIcon? _icon;
-    private MenuItem? _miScreenshot, _miVideo, _miScroll, _miSilent;
+    private MenuItem? _miScreenshot, _miVideo, _miScroll, _miSilent, _miUpdate;
     private bool _lastRecording;
     private bool _lastLight;
 
@@ -34,6 +34,7 @@ public sealed class TrayService : IDisposable
     public TaskbarIcon Icon => _icon ?? throw new InvalidOperationException("Трей не инициализирован");
 
     private AppCommands Commands => _services.GetRequiredService<AppCommands>();
+    private UpdateService Updates => _services.GetRequiredService<UpdateService>();
 
     public void Initialize()
     {
@@ -50,6 +51,7 @@ public sealed class TrayService : IDisposable
 
         _state.Changed += () => Application.Current?.Dispatcher.BeginInvoke(() => UpdateIcon(false));
         _store.Changed += (_, _) => Application.Current?.Dispatcher.BeginInvoke(RefreshMenu);
+        Updates.AvailableChanged += RefreshMenu;
         SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
         _logger.LogInformation("Иконка в трее создана");
     }
@@ -75,6 +77,11 @@ public sealed class TrayService : IDisposable
         menu.Items.Add(new Separator());
         menu.Items.Add(_miSilent);
         menu.Items.Add(new Separator());
+        _miUpdate = Item("", () => Updates.ShowWindow());
+        _miUpdate.FontWeight = FontWeights.SemiBold;
+        _miUpdate.Visibility = Visibility.Collapsed;
+        menu.Items.Add(_miUpdate);
+        menu.Items.Add(Item("Проверить обновления", () => _ = Updates.CheckAsync(manual: true)));
         menu.Items.Add(Item("Настройки", () => Commands.ShowSettings()));
         menu.Items.Add(Item("О программе", () => Commands.ShowSettings(SettingsTab.About)));
         menu.Items.Add(new Separator());
@@ -96,6 +103,12 @@ public sealed class TrayService : IDisposable
         if (_miScreenshot != null) _miScreenshot.InputGestureText = s.HotkeyRegionScreenshot.ToString();
         if (_miVideo != null) _miVideo.InputGestureText = s.HotkeyVideoRecording.ToString();
         if (_miSilent != null) _miSilent.IsChecked = s.SilentMode;
+        if (_miUpdate != null)
+        {
+            var available = Updates.Available;
+            _miUpdate.Header = available is null ? "" : $"Установить версию {available.Version}";
+            _miUpdate.Visibility = available is null ? Visibility.Collapsed : Visibility.Visible;
+        }
     }
 
     private void OnLeftClick()

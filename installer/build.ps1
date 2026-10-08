@@ -2,7 +2,7 @@
 # Требуется .NET SDK и WiX:  dotnet tool install --global wix
 # Архитектура: x64 (по умолчанию) или arm64; ARM64-сборка кросс-компилируется на обычном x64-компьютере.
 param(
-    [string]$Version = "1.2.0",
+    [string]$Version = "1.3.0",
     [ValidateSet("x64", "arm64")]
     [string]$Arch = "x64",
     [switch]$SkipPublish
@@ -19,8 +19,8 @@ if (-not $SkipPublish) {
     Write-Host "Публикация самодостаточной сборки ($Arch)..."
     Get-Process Kadr, Kadr.Recorder -ErrorAction SilentlyContinue | Stop-Process -Force
     Remove-Item -Recurse -Force $publish -ErrorAction SilentlyContinue
-    dotnet publish (Join-Path $root "src\Kadr.Recorder\Kadr.Recorder.csproj") -c Release -r win-$Arch --self-contained true -o $publish --nologo -v q
-    dotnet publish (Join-Path $root "src\Kadr.App\Kadr.App.csproj")          -c Release -r win-$Arch --self-contained true -o $publish --nologo -v q
+    dotnet publish (Join-Path $root "src\Kadr.Recorder\Kadr.Recorder.csproj") -c Release -r win-$Arch --self-contained true -o $publish --nologo -v q -p:Version=$Version
+    dotnet publish (Join-Path $root "src\Kadr.App\Kadr.App.csproj")          -c Release -r win-$Arch --self-contained true -o $publish --nologo -v q -p:Version=$Version
     Copy-Item (Join-Path $root "LICENSE"), (Join-Path $root "THIRD-PARTY-NOTICES.md") $publish -Force
 }
 
@@ -37,6 +37,10 @@ Write-Host "Сборка $msi ..."
     -d PublishDir=$publish `
     -o $msi
 if ($LASTEXITCODE -ne 0) { throw "Сборка установщика не удалась" }
+
+# Контрольная сумма для автообновления: программа скачивает её вместе с MSI и сверяет.
+$hash = (Get-FileHash $msi -Algorithm SHA256).Hash.ToLowerInvariant()
+[IO.File]::WriteAllText("$msi.sha256", $hash, [Text.Encoding]::ASCII)
 
 $size = [math]::Round((Get-Item $msi).Length / 1MB, 1)
 Write-Host "Готово: $msi ($size МБ)"

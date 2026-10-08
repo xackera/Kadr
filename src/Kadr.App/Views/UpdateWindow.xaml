@@ -1,0 +1,47 @@
+<Window x:Class="Kadr.App.Views.UpdateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Обновление Kadr" Width="600" Height="520" MinWidth="480" MinHeight="380"
+        Background="White" WindowStartupLocation="CenterScreen" ShowInTaskbar="True"
+        Icon="pack://application:,,,/Assets/kadr-app.ico">
+    <Grid Margin="28,24,28,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+            <Image Source="pack://application:,,,/Assets/kadr-logo.png" Width="40" Height="40" Margin="0,0,14,0"
+                   RenderOptions.BitmapScalingMode="HighQuality" />
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Name="Header" Text="Доступна новая версия Kadr" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
+                <TextBlock x:Name="Versions" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+            </StackPanel>
+        </StackPanel>
+
+        <TextBlock Grid.Row="1" Text="Что нового" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" Margin="0,4,0,6" />
+
+        <TextBox Grid.Row="2" x:Name="Notes" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top"
+                 BorderBrush="{StaticResource BorderBrush}" Padding="10,8" FontSize="13" Foreground="{StaticResource TextBrush}" />
+
+        <StackPanel Grid.Row="3" Margin="0,12,0,0">
+            <StackPanel x:Name="ProgressPanel" Visibility="Collapsed">
+                <ProgressBar x:Name="Progress" Height="6" Minimum="0" Maximum="1" />
+                <TextBlock x:Name="ProgressText" Foreground="{StaticResource TextMutedBrush}" Margin="0,6,0,0" />
+            </StackPanel>
+            <TextBlock x:Name="Message" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed" />
+        </StackPanel>
+
+        <DockPanel Grid.Row="4" Margin="0,16,0,0" LastChildFill="False">
+            <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center">
+                <Hyperlink Click="Page_Click">Страница релиза</Hyperlink>
+            </TextBlock>
+            <Button x:Name="BtnInstall" DockPanel.Dock="Right" Content="Установить" Style="{StaticResource AccentButton}" Margin="0" Click="Install_Click" />
+            <Button x:Name="BtnLater" DockPanel.Dock="Right" Content="Позже" Style="{StaticResource FlatButton}" Click="Later_Click" />
+            <Button x:Name="BtnSkip" DockPanel.Dock="Right" Content="Пропустить эту версию" Style="{StaticResource FlatButton}" Click="Skip_Click" />
+        </DockPanel>
+    </Grid>
+</Window>

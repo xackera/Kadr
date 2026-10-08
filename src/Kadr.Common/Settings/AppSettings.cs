@@ -30,6 +30,12 @@ public sealed class AppSettings
     [JsonPropertyName("silent_mode")] public bool SilentMode { get; set; } = false;
     [JsonPropertyName("tray_left_click_action")] public TrayClickAction TrayLeftClickAction { get; set; } = TrayClickAction.ShowPanel;
     [JsonPropertyName("check_for_updates")] public bool CheckForUpdates { get; set; } = false;
+    /// <summary>Время последней успешной проверки обновлений (UTC).</summary>
+    [JsonPropertyName("update_last_check")] public DateTime? UpdateLastCheck { get; set; }
+    /// <summary>Версия, которую пользователь пропустил: автоматическая проверка её не предлагает.</summary>
+    [JsonPropertyName("update_skipped_version")] public string UpdateSkippedVersion { get; set; } = "";
+    /// <summary>Только для тестов: свой источник описания релиза вместо GitHub — URL или путь к JSON-файлу.</summary>
+    [JsonPropertyName("update_source_url")] public string UpdateSourceUrl { get; set; } = "";
 
     // ---- Горячие клавиши
     [JsonPropertyName("hotkey_region_screenshot")] public Hotkey HotkeyRegionScreenshot { get; set; } = new(VirtualKeys.Snapshot);
